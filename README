@@ -8,3 +8,6 @@ snp_file_name: a list of snps
 flank_seq_file_name: the output described above.
 
 
+1. run_AIMs_generator.sh 
+
+2. calc_ancestry_proportions.sh 

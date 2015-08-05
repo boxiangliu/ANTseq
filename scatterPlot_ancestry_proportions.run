@@ -1,0 +1,31 @@
+#!/bin/bash 
+
+##directories:
+ancestry="/srv/persistent/bliu2/ancestry"
+scatterPlot_ancestry_proportions="$ancestry/scripts/scatterPlot_ancestry_proportions.r"
+admixture_dir="$ancestry/AIMS_selection/ADMIXTURE_noSubpop"
+
+##all superpopulations:
+populations=(AFR \
+# AMR \
+EAS \
+EUR \
+SAS)
+
+##run scatterPlot_ancestry_proportions, for all pairs of populations:
+npops=${#populations[*]}
+for i in $(seq 1 $((npops-1))); do
+	for j in $(seq $((i+1)) $npops); do 
+
+	pop1=${populations[$((i-1))]}
+	pop2=${populations[$((j-1))]}
+
+	nAims=500
+	wd="$admixture_dir/$pop1.$pop2"
+	wgs="$wd/$pop1.$pop2.2.Q"
+	aims="$wd/$pop1.$pop2.$nAims.AIMs.2.Q"
+	figname="$wd/${pop1}_${pop2}.${nAims}aims.ancestryProportions.pdf"
+	title="$pop1 and $pop2, $nAims AIMs" 
+	Rscript $scatterPlot_ancestry_proportions $wgs $aims $figname "$title"
+	done 
+done 
