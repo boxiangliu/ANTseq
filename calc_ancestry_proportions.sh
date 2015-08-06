@@ -110,7 +110,7 @@ if [[ ! -d $snpid_dir ]]; then
 	mkdir $snpid_dir
 fi
 
-aims_fname="AFR_AMR_EUR_446.Galanter.ordered.txt"
+aims_fname="AFR_AMR_EUR_446.Galanter.orderedByIn.aims"
 awk 'NR!=1{print $1}' $AIMs_dir/$pops/$aims_fname > $snpid_dir/$aims_fname.snpid
 
 nmarkers=446
