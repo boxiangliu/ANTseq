@@ -32,7 +32,7 @@ for aimsFile in ${aimsFileArray[*]}; do
 	current_primers_dir="$primers_dir/$dirpath"
 	[[ ! -d $current_primers_dir ]] && mkdir $current_primers_dir
 	# python $run_yamPCR $aims_dir/$aimsFile 10 $current_primers_dir &
-	python $run_yamPCR $aims_dir/$aimsFile 10 $current_primers_dir &> $current_primers_dir/log.txt
+	python -u $run_yamPCR $aims_dir/$aimsFile 10 $current_primers_dir > $current_primers_dir/log.txt
 	pids="$pids $!"
 	echo "reading files from $aimsFile, saving to $current_primers_dir; PID: $!"
 done 

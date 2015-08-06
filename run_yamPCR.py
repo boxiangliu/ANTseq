@@ -201,8 +201,8 @@ def repeatCounter(aims_list, previous_aims_list, timesRepeated):
 
 def reportRemainingAIMs(remaining_aims):
 	'''report status on remaining aims''' 
-	print "%i AIMs remaining:"%len(remaining_aims)
-	print "\n".join([aims['snp'] for aims in remaining_aims])
+	sys.stdout.write("%i AIMs remaining:"%len(remaining_aims))
+	sys.stdout.write("\n".join([aims['snp'] for aims in remaining_aims]))
 
 def designMultiplexPrimers(aims_list, poolSize, poolNum):
 	##check if more than 1-poolSize aims left in the list: 
@@ -211,7 +211,7 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 		primers_list = []
 		return primers_list, aims_list
 
-	print "## Iteration 0 ##"
+	sys.stdout.write("## Iteration 0 ##")
 	##retrieve aims from the master list:
 	aims_currentPool, aims_list = retrieveAIMs(aims_list, poolSize)
 
@@ -232,8 +232,8 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 
 	##remove SNPs for which Primer3 cannot find any primer:
 	aims_currentPool, numPrimer3FailedSNPs, primer3FailedSNPs = remove_Primer3FailedSNPs(yamPCR_output, aims_currentPool)
-	print "Primer 3 cannot find primer for:"
-	print "\n".join(primer3FailedSNPs)
+	sys.stdout.write("Primer 3 cannot find primer for:")
+	sys.stdout.write("\n".join(primer3FailedSNPs))
 
 	##replenish current aims list.
 	##if there are not enough AIMs left, return primers_list and empty aims_list:  
@@ -257,7 +257,7 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 	previous_remaining_aims = []
 	while len(primers_list) < poolSize: 
 		n += 1
-		print "## Iteration %i ##"%n
+		sys.stdout.write("## Iteration %i ##"%n)
 
 		##write includedPrimers
 		includedPrimersFile = "./tmp/includedPrimers.txt"
@@ -276,8 +276,8 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 		aims_currentPool, numPrimer3FailedSNPs, primer3FailedSNPs = remove_Primer3FailedSNPs(yamPCR_output, aims_currentPool)
 		
 		if numPrimer3FailedSNPs > 0: 
-			print "Primer 3 cannot find primer for:"
-			print "\n".join(primer3FailedSNPs)
+			sys.stdout.write("Primer 3 cannot find primer for:")
+			sys.stdout.write("\n".join(primer3FailedSNPs))
 
 			##replenish current aims list.
 			##if there are not enough AIMs left, return primers_list and empty aims_list:  
@@ -292,8 +292,8 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 		##if no, replace remaining_aims with new ones from master list:
 		if noInteraction(yamPCR_output) == True: 
 			aims_currentPool, numFailedSNPs, otherFailedSNPs = remove_otherFailedSNPs(yamPCR_output, aims_currentPool)
-			print "Discarded SNPs:"
-			print "\n".join(otherFailedSNPs)
+			sys.stdout.write("Discarded SNPs:")
+			sys.stdout.write("\n".join(otherFailedSNPs))
 
 			##add new SNPs from the master list: 
 			if hasEnoughAIMs(aims_list, numFailedSNPs):
@@ -312,15 +312,15 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 		reportRemainingAIMs(remaining_aims)
 		
 		#debug
-		print "previous remainning AIMs:"
-		print "\n".join([aims['snp'] for aims in previous_remaining_aims])
+		sys.stdout.write("previous remainning AIMs:")
+		sys.stdout.write("\n".join([aims['snp'] for aims in previous_remaining_aims]))
 
 
 		##count how many times the same aims_currentPool has appeared:
 		timesRepeated, previous_remaining_aims = repeatCounter(remaining_aims, previous_remaining_aims, timesRepeated)
 		
 		##report:
-		print "Repeated current pool for %i time(s)"%timesRepeated
+		sys.stdout.write("Repeated current pool for %i time(s)"%timesRepeated)
 
 		##if the same aims_currentPool has appeared more than 3 times
 		##replace remaining_aims in aims_currentPool with new ones from master list,
@@ -335,7 +335,7 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 				aims_currentPool += retrieved_aims
 
 				##report: 
-				print "Replaced %s with %s"%(", ".join([aims['snp'] for aims in remaining_aims]), ", ".join([aims['snp'] for aims in retrieved_aims]))
+				sys.stdout.write("Replaced %s with %s"%(", ".join([aims['snp'] for aims in remaining_aims]), ", ".join([aims['snp'] for aims in retrieved_aims])))
 
 			else:
 				aims_list = []
@@ -381,19 +381,19 @@ poolNum = 0
 while len(aims_list) > 0:
 	ticc = timeit.default_timer()
 	poolNum += 1
-	print "Starting primer pool %i"%poolNum
+	sys.stdout.write("Starting primer pool %i"%poolNum)
 	primers_list, aims_list = designMultiplexPrimers(aims_list, poolSize, poolNum)
 	primerPoolFile = "./primerPool_%i.txt"%poolNum
 	writePrimerPool(primers_list, primerPoolFile)
 	tocc = timeit.default_timer()
 	elapsed = str(datetime.timedelta(seconds = tocc - ticc))
-	print "Primer pool %i done!"%poolNum
-	print "Time elapsed: %s"%elapsed
+	sys.stdout.write("Primer pool %i done!"%poolNum)
+	sys.stdout.write("Time elapsed: %s"%elapsed)
 
 ##stop timer:
 toc = timeit.default_timer()
 total_elaped = str(datetime.timedelta(seconds = toc - tic))
 
 ##report done:
-print "Designed %i primers pools"%poolNum
-print "Total time elapsed: %s"%total_elaped
+sys.stdout.write("Designed %i primers pools"%poolNum)
+sys.stdout.write("Total time elapsed: %s"%total_elaped)
