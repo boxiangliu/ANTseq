@@ -24,12 +24,13 @@ AIMs/EUR.SAS/EUR_SAS_500k_500.aims \
 )
 
 
-# aimsFileArray=(AFR.SAS/AFR_SAS_500k_t487.aims)
-
+# aimsFileArray=AIMs/EAS.SAS/EAS_SAS_500k_500.f375.aims
+aimsFileArray=AIMs/EAS.SAS/EAS_SAS_500k_500.aims
 pids=""
 for aimsFile in ${aimsFileArray[*]}; do
 	dirpath=$(basename $(dirname $aimsFile))
-	current_primers_dir="$primers_dir/$dirpath"
+	# current_primers_dir="$primers_dir/$dirpath"
+	current_primers_dir="$primers_dir/$dirpath.20150812"
 	[[ ! -d $current_primers_dir ]] && mkdir $current_primers_dir
 	python -u $run_yamPCR $aims_dir/$aimsFile 10 $current_primers_dir > $current_primers_dir/log.txt &
 	pids="$pids $!"

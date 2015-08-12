@@ -1,0 +1,30 @@
+#!/bin/bash 
+
+ADMIXTURE_SUPERVISED="/srv/persistent/bliu2/ancestry/AIMS_selection/ADMIXTURE_supervised"
+COMBINEQ="/srv/persistent/bliu2/ancestry/scripts/combineQ.py"
+populations=( # AFR \
+# AMR \
+EAS \
+EUR \
+SAS)
+
+npops=${#populations[*]}
+for i in $(seq 1 $((npops-1))); do
+	for j in $(seq $((i+1)) $npops); do 
+
+		pop1=${populations[$((i-1))]}
+		pop2=${populations[$((j-1))]}
+
+		cwd="$ADMIXTURE_SUPERVISED/$pop1.$pop2"; cd $cwd
+		[[ ! -d loo ]] && mkdir loo
+		mv *loo*.? loo/
+
+		##combine all Q files into one:
+		ls -v loo/$pop1.$pop2.loo.*.2.Q > $pop1.$pop2.loo.2.flist
+		python $COMBINEQ $pop1.$pop2.loo.2.flist > $pop1.$pop2.loo.2.Q
+
+		ls -v loo/$pop1.$pop2.500.AIMs.loo.*.2.Q > $pop1.$pop2.500.AIMs.loo.2.flist
+		python $COMBINEQ $pop1.$pop2.500.AIMs.loo.2.flist > $pop1.$pop2.500.AIMs.loo.2.Q
+	done
+done 
+

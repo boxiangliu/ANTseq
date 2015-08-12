@@ -292,6 +292,10 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 		##if no, replace remaining_aims with new ones from master list:
 		if noInteraction(yamPCR_output) == True: 
 			aims_currentPool, numFailedSNPs, otherFailedSNPs = remove_otherFailedSNPs(yamPCR_output, aims_currentPool)
+			
+			##debug:
+			print "within noInteraction conditionl, after removal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
+			
 			print "Discarded SNPs:"
 			print "\n".join(otherFailedSNPs)
 
@@ -329,6 +333,9 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 			##remove remaining_aims from aims_currentPool: 
 			aims_currentPool = removeAIMs(aims_currentPool,remaining_aims)
 
+			##debug:
+			print "after removeal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
+			
 			##replace with new aims from master list: 
 			if hasEnoughAIMs(aims_list, len(remaining_aims)):
 				retrieved_aims, aims_list = retrieveAIMs(aims_list,len(remaining_aims))
