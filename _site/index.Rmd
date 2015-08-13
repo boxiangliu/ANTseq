@@ -2,3 +2,27 @@
 
 <center> <h3>Cheap Ancestry determination with Targeted Sequencing</h3> </center>
 
+Introduction 
+-------------
+CATS is a pipeline to determine the ancestral origins of DNA samples.  
+
+CATS uses [microfluidic multiplex PCR](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework. 
+
+Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is achieved by 1000G
+
+
+Installation 
+-------------
+
+We provide AIMs sets for pairwise comparisons of [ancestral populations](http://www.1000genomes.org/category/frequently-asked-questions/population) cataloged by the 1000 Genomes consortium (Africans, East Asian, European, South Asian) and an additional three-way comparison for Admixed American (Native American, European and African). We also provide multiplex primer pools for these AIMs sets. You do not need to install CATS if you decide to use primers provided.
+
+1. 
+
+Example
+--------
+
+Citation
+--------
+
+
+
