@@ -1,0 +1,7 @@
+---
+output: html_document
+---
+<center> <h1>CATS</h1> </center>
+
+<center> <h3>Cheap Ancestry determination with Targeted Sequencing</h3> </center>
+
