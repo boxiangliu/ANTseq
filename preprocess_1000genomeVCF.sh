@@ -1,4 +1,9 @@
 #!/bin/bash 
+
+##Filter out variants with global allele frequency less than 0.05. 
+##These variants are unlikely to be informative for ancestry inference
+##so we filter them out to speed up downstream computation.
+
 wd="/srv/persistent/bliu2/shared/1000genomes/phase3v5"
 cd $wd
 
@@ -29,7 +34,7 @@ ALL.chr22.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz)
 pids=""
 for input in ${input_list[*]}; do
 	output=${input/vcf/maf05.vcf}
-	(vcftools --gzvcf $input --recode --recode-INFO-all --maf 0.05 --stdout --out $input | gzip -c > $output) &
+	(vcftools --gzvcf $input --recode --recode-INFO-all --maf 0.05 --stdout | gzip -c > $output) &
 	pids="$pids $!"
 done
 wait $pids
