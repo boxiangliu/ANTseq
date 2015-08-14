@@ -64,109 +64,17 @@ Cheap Ancestry determination with Targeted Sequencing
 <h2>Introduction</h2>
 <p>CATS is a pipeline to determine the ancestral origins of DNA samples.</p>
 <p>CATS uses <a href="http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html">microfluidic multiplex PCR</a> to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework.</p>
-<p>Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.</p>
+<p>Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is achieved by 1000G</p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
 <p>We provide AIMs sets for pairwise comparisons of <a href="http://www.1000genomes.org/category/frequently-asked-questions/population">ancestral populations</a> cataloged by the 1000 Genomes consortium (Africans, East Asian, European, South Asian) and an additional three-way comparison for Admixed American (Native American, European and African). We also provide multiplex primer pools for these AIMs sets. You do not need to install CATS if you decide to use primers provided.</p>
-<p>CATS is written in Python 2.7 and depends on numpy and scipy. You can either install the <a href="https://store.continuum.io/cshop/anaconda/">Anaconda</a> distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, CATS depends on <a href="http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html">yamPCR</a> which is written in Perl. In order for yamPCR to function properly, you need to:</p>
 <ol style="list-style-type: decimal">
-<li><p>Download and install <a href="http://www.bioperl.org/wiki/Installing_BioPerl">BioPerl</a></p></li>
-<li><p>Download and install <a href="http://search.cpan.org/~abigail/Algorithm-Numerical-Shuffle-2009110301/lib/Algorithm/Numerical/Shuffle.pm">Algorithm::Numerical::Shuffle</a></p></li>
-<li><p>Download and install <a href="http://search.cpan.org/~jv/Getopt-Long-2.47/lib/Getopt/Long.pm">Getopt::long</a></p></li>
+<li></li>
 </ol>
-<p>The easiest way to install these module is to use <a href="http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm">cpanminus</a></p>
-<ol start="4" style="list-style-type: decimal">
-<li>Modify the yamPCR.pl program under section “Parameter need to be customized”</li>
-</ol>
-<p><strong>TODO: add blast binary and hg19 reference genome to yamPCR directory</strong></p>
-<p>In addition, you should install <a href="http://vcftools.sourceforge.net/">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">PLINK2</a> and <a href="https://www.genetics.ucla.edu/software/admixture/">ADMIXTURE</a> and add them to your PATH.</p>
 </div>
 <div id="example" class="section level2">
 <h2>Example</h2>
-<p>In this example, suppose we need to estimate the ancestry proportion of individuals with European and African origins.</p>
-<div id="step-1" class="section level3">
-<h3>Step 1:</h3>
-<p>Download the latest 1000 Genomes genotype data and panel file:</p>
-<pre><code>for i in $(seq 1 22); do
-  wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz
-done 
-wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel</code></pre>
-</div>
-<div id="step-2" class="section level3">
-<h3>Step 2:</h3>
-<p>Filter out variants with global allele frequency less than 0.05. These variants are unlikely to be informative for ancestry inference so we filter them out to speed up downstream computation.</p>
-<pre><code>for i in {1..22}; do
-  vcftools --gzvcf ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz --recode --recode-INFO-all --maf 0.05 --stdout | gzip -c &gt; ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz
-done 
-vcf-concat ALL.chr{1..22}.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz | gzip -c &gt; ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz</code></pre>
-</div>
-<div id="step-3" class="section level3">
-<h3>Step 3:</h3>
-<p>Calculate allele frequencies of European and African populations.</p>
-<pre><code>for pop in {AFR,EUR}; do
-  pop_file=&quot;$pop.pop&quot;
-  cat integrated_call_samples_v3.20130502.ALL.panel | grep $pop | awk '{print $1, $1, $2}' &gt; $pop_file
-  plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --freq --make-bed --keep-allele-order --keep $pop_file --out $pop
-done </code></pre>
-</div>
-<div id="step-4" class="section level3">
-<h3>Step 4:</h3>
-<p>Calculate global LD r2. Report r2 only when variants are within 2000kbps of each other and has r2 greater than 0.2:</p>
-<pre><code>plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k</code></pre>
-</div>
-<div id="step-5" class="section level3">
-<h3>Step 5:</h3>
-<p>Select AIMs markers optimized to distinguish Europeans from Africans:</p>
-<p>First populate aims_properties.txt with pathes to AFR.frq and EUR.frq, an example can be found here: <strong>TODO: make an example aims_properties.txt file</strong></p>
-<p>Next run AIMs_generator.py:</p>
-<pre><code>python AIMs_generator.py aims_properties.txt </code></pre>
-<p>Note: Download pre-selected AIMs <a href="TODO">here</a>.</p>
-</div>
-<div id="step-6" class="section level3">
-<h3>Step 6:</h3>
-<p>Design primer pools for AIMs in step 5. Each pool should contain 10 primer pairs.</p>
-<pre><code>python run_yamPCR.py AFR_EUR_500k_500.aims 10 &lt;path/to/output/dir&gt;</code></pre>
-<p>Note: download pre-designed multiplex primer pools <a href="TODO">here</a></p>
-</div>
-<div id="step-7" class="section level3">
-<h3>Step 7:</h3>
-<p>We want to know how closely the AIMs estimation matches the true ancestry proportions. The true ancestry proportions are calculated using all 1000 Genomes SNPs.</p>
-<pre><code>ls -v primerPool_*.txt &gt; primerPoolList.txt
-calc_ancestry_proportions.py -p AFR,EUR -l primerPoolList.txt</code></pre>
-</div>
-<div id="step-8" class="section level3">
-<h3>Step 8:</h3>
-<p>Visualize the correlation between AIMs estimation and true ancestry proportions. Here we assume 35 primer pools are designed:</p>
-<pre><code>Rscript plot_ancestry_r2_vs_num_AIMs.r AFR,EUR 35</code></pre>
-<p>The resulting plot looks like:</p>
-<p align="center">
-  
-<img src="data:application/pdf;base64,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dxMzue+x7ys/mH7o+Rj08e6njE+ffgP3hPP7ZW5kc3RyZWFtCmVuZG9iago5IDAgb2JqCjw8Ci9UeXBlIC9FbmNvZGluZyAvQmFzZUVuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKL0RpZmZlcmVuY2VzIFsgNDUvbWludXMgOTYvcXVvdGVsZWZ0CjE0NC9kb3RsZXNzaSAvZ3JhdmUgL2FjdXRlIC9jaXJjdW1mbGV4IC90aWxkZSAvbWFjcm9uIC9icmV2ZSAvZG90YWNjZW50Ci9kaWVyZXNpcyAvLm5vdGRlZiAvcmluZyAvY2VkaWxsYSAvLm5vdGRlZiAvaHVuZ2FydW1sYXV0IC9vZ29uZWsgL2Nhcm9uIC9zcGFjZV0KPj4KZW5kb2JqCjEwIDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UeXBlMSAvTmFtZSAvRjEgL0Jhc2VGb250IC9aYXBmRGluZ2JhdHMgPj4KZW5kb2JqCjExIDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UeXBlMSAvTmFtZSAvRjIgL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIDkgMCBSID4+CmVuZG9iagoxMiAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL05hbWUgL0YzIC9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQKL0VuY29kaW5nIDkgMCBSID4+CmVuZG9iagp4cmVmCjAgMTMKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDIxIDAwMDAwIG4gCjAwMDAwMDAxNjMgMDAwMDAgbiAKMDAwMDAwMTU5OCAwMDAwMCBuIAowMDAwMDAxNjgxIDAwMDAwIG4gCjAwMDAwMDE4MTYgMDAwMDAgbiAKMDAwMDAwMTg0OSAwMDAwMCBuIAowMDAwMDAwMjEyIDAwMDAwIG4gCjAwMDAwMDAyOTIgMDAwMDAgbiAKMDAwMDAwNDU0NCAwMDAwMCBuIAowMDAwMDA0ODAxIDAwMDAwIG4gCjAwMDAwMDQ4ODUgMDAwMDAgbiAKMDAwMDAwNDk4MiAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDEzIC9JbmZvIDEgMCBSIC9Sb290IDIgMCBSID4+CnN0YXJ0eHJlZgo1MDg0CiUlRU9GCg==">
-<p></p>
-
-<p>It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999 correlation with the true ancestry proportions. However, since some primer pairs fail during PCR, you may want to double the number and use the first 15 primer pools.</p>
-</div>
-<div id="step-9" class="section level3">
-<h3>Step 9:</h3>
-<p>Microfluidic multiplex PCR and sequencing:</p>
-<p><strong><em>TODO: fill in this section</em></strong></p>
-</div>
-<div id="step-10" class="section level3">
-<h3>Step 10:</h3>
-<p>Map the fastq files:</p>
-<p><strong><em>TODO</em></strong></p>
-</div>
-<div id="step-11" class="section level3">
-<h3>Step 11:</h3>
-<p>Call genotype using GATK:</p>
-<p><strong><em>TODO</em></strong></p>
-</div>
-<div id="step-12" class="section level3">
-<h3>Step 12:</h3>
-<p>Estimate ancestry proportions:</p>
-<p><strong><em>TODO</em></strong></p>
-</div>
 </div>
 <div id="citation" class="section level2">
 <h2>Citation</h2>
