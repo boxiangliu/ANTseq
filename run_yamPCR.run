@@ -30,7 +30,7 @@ pids=""
 for aimsFile in ${aimsFileArray[*]}; do
 	dirpath=$(basename $(dirname $aimsFile))
 	# current_primers_dir="$primers_dir/$dirpath"
-	current_primers_dir="$primers_dir/$dirpath.20150812"
+	current_primers_dir="$primers_dir/$dirpath.20150814"
 	[[ ! -d $current_primers_dir ]] && mkdir $current_primers_dir
 	python -u $run_yamPCR $aims_dir/$aimsFile 10 $current_primers_dir > $current_primers_dir/log.txt &
 	pids="$pids $!"

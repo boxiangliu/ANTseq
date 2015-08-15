@@ -20,7 +20,7 @@ import datetime
 # constants
 ############
 yamPCR = '/srv/persistent/bliu2/ancestry/multiplex_primer_design/mmPCR_gDNA_BL/yamPCR/yamPCR.pl'
-
+debug = True
 ##########
 #function
 ##########
@@ -294,7 +294,7 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 			aims_currentPool, numFailedSNPs, otherFailedSNPs = remove_otherFailedSNPs(yamPCR_output, aims_currentPool)
 			
 			##debug:
-			print "within noInteraction conditionl, after removal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
+			if debug: print "within noInteraction conditionl, after removal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
 			
 			print "Discarded SNPs:"
 			print "\n".join(otherFailedSNPs)
@@ -307,17 +307,11 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 				aims_list = []
 				return primers_list, aims_list
 
-
-
-		##take out SNPs with good primers from target list, write remaining SNPs to target file: 
-		remainingTargetFile = "./tmp/remainingTargetFile.txt"
-		remaining_aims = removeAIMsWithPrimer(aims_currentPool, primers_list)
-		gen_yamPCR_input(remaining_aims, remainingTargetFile)
-		reportRemainingAIMs(remaining_aims)
 		
 		#debug
-		print "previous remainning AIMs:"
-		print "\n".join([aims['snp'] for aims in previous_remaining_aims])
+		if debug: 
+			print "previous remainning AIMs:"
+			print "\n".join([aims['snp'] for aims in previous_remaining_aims])
 
 
 		##count how many times the same aims_currentPool has appeared:
@@ -334,7 +328,8 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 			aims_currentPool = removeAIMs(aims_currentPool,remaining_aims)
 
 			##debug:
-			print "after removeal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
+			if debug: 
+				print "after removeal, aims_currentPool is %s"%", ".join([aims['snp'] for aims in aims_currentPool])  
 			
 			##replace with new aims from master list: 
 			if hasEnoughAIMs(aims_list, len(remaining_aims)):
@@ -354,6 +349,13 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 
 			##reset times repeated:
 			timesRepeated = 0
+
+		##take out SNPs with good primers from target list, write remaining SNPs to target file: 
+		remainingTargetFile = "./tmp/remainingTargetFile.txt"
+		remaining_aims = removeAIMsWithPrimer(aims_currentPool, primers_list)
+		gen_yamPCR_input(remaining_aims, remainingTargetFile)
+		reportRemainingAIMs(remaining_aims)
+
 
 		##sanity check whether aims_currentPool has 1-poolSize SNPs: 
 		assert len(aims_currentPool) == poolSize, "current AIMs list has %i elements!"%len(aims_currentPool)
