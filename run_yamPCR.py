@@ -315,6 +315,7 @@ def designMultiplexPrimers(aims_list, poolSize, poolNum):
 
 
 		##count how many times the same aims_currentPool has appeared:
+		remaining_aims = removeAIMsWithPrimer(aims_currentPool, primers_list)
 		timesRepeated, previous_remaining_aims = repeatCounter(remaining_aims, previous_remaining_aims, timesRepeated)
 		
 		##report:

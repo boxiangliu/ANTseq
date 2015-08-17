@@ -1,0 +1,26 @@
+#!/bin/bash 
+
+##directories:
+ancestry="/srv/persistent/bliu2/ancestry"
+plot_ancestry_r2_vs_num_AIMs="$ancestry/scripts/plot_ancestry_r2_vs_num_AIMs.primerPools.r"
+admixture_dir="$ancestry/AIMS_selection/multiplexPrimers"
+
+##all superpopulations:
+pop_contrasts=(AFR,AMR,EUR \
+AFR,EAS \
+AFR,EUR \
+AFR,SAS \
+EAS,EUR \
+# EAS,SAS,20150817 \
+EUR,SAS)
+
+##run scatterPlot_ancestry_proportions, for all pairs of populations:
+numContrast=${#pop_contrasts[*]}
+for i in $(seq 1 $numContrast); do
+
+	pop_contrast=${pop_contrasts[$((i-1))]}
+	wd=$admixture_dir/${pop_contrast//,/.}; cd $wd
+	numPools=$(ls *.cumPrimerPool_*.?.Q | wc -l)
+	Rscript $plot_ancestry_r2_vs_num_AIMs $pop_contrast $numPools
+
+done 
