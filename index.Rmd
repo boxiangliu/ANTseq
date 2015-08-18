@@ -150,7 +150,7 @@ Microfluidic multiplex PCR and sequencing:
 
 1. Order multiplex primers 
 
-Order primer plate using any service you are comfortable with. Here we provide a template for ThermoFisher/Invitrogen
+Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](_example/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. 
 
 
 ### Step 10: 
