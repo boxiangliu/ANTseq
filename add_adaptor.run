@@ -1,0 +1,29 @@
+#!/bin/bash
+
+##directories:
+ancestry="/srv/persistent/bliu2/ancestry"
+admixture_dir="$ancestry/AIMS_selection/multiplexPrimers"
+add_adaptor="$ancestry/scripts/add_adaptor.py"
+
+##all population contrasts:
+pop_contrasts=(AFR,AMR,EUR \
+AFR,EAS \
+AFR,EUR \
+AFR,SAS \
+EAS,EUR \
+# EAS,SAS,20150817 \
+EUR,SAS)
+
+##run add_adaptor.py, for all pairs of populations:
+numContrast=${#pop_contrasts[*]}
+for i in $(seq 1 $numContrast); do
+
+	pop_contrast=${pop_contrasts[$((i-1))]}
+	wd=$admixture_dir/${pop_contrast//,/.}; cd $wd
+	numPools=$(ls primerPool_*.txt | wc -l)
+
+	for j in $(seq 1 $numPools); do
+		cat primerPool_$j.txt | python $add_adaptor > primerPool_$j.adaptor.txt
+	done
+
+done 
