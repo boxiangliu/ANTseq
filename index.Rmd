@@ -1,5 +1,7 @@
 ---
-output: html_document
+output: 
+  html_document:
+    self_contained: true
 ---
 <center> <h1>CATS</h1> </center>
 
@@ -99,10 +101,20 @@ Note: Download pre-selected AIMs [here](TODO).
 
 ### Step 6:
 
-Design primer pools for AIMs in step 5. Each pool should contain 10 primer pairs. 
+Design primer pools for AIMs in step 5. Each pool will contain 10 primer pairs. 
+
+**Warning: the step may take quite some time (1-2 days based on our experience)!**
 
 ```
 python run_yamPCR.py AFR_EUR_500k_500.aims 10 <path/to/output/dir>
+```
+
+You will end up with files named primerPools_*.txt in your output_directory. 
+
+Next we add barcode adapters to each primer: 
+
+```
+cat primerPools_1.txt | python add_adaptor.py > primerPools_1.adaptor.txt
 ```
 
 Note: download pre-designed multiplex primer pools [here](TODO)
@@ -127,7 +139,7 @@ Rscript plot_ancestry_r2_vs_num_AIMs.r AFR,EUR 35
 The resulting plot looks like: 
 
 <p align="center">
-  <img src="_images/AFR.EUR.ancestry_r2_vs_num_AIMs.pdf">
+  <img src="_images/AFR.EUR.ancestry_r2_vs_num_AIMs.png" style="width: 500px;"/>
 <p/>
 
 It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999 correlation with the true ancestry proportions. However, since some primer pairs fail during PCR, you may want to double the number and use the first 15 primer pools.
@@ -136,7 +148,10 @@ It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999
 
 Microfluidic multiplex PCR and sequencing: 
 
-***TODO: fill in this section***
+1. Order multiplex primers 
+
+Order primer plate using any service you are comfortable with. Here we provide a template for ThermoFisher/Invitrogen
+
 
 ### Step 10: 
 

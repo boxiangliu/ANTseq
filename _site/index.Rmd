@@ -8,7 +8,7 @@ CATS is a pipeline to determine the ancestral origins of DNA samples.
 
 CATS uses [microfluidic multiplex PCR](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework. 
 
-Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is achieved by 1000G
+Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.   
 
 
 Installation 
@@ -16,13 +16,157 @@ Installation
 
 We provide AIMs sets for pairwise comparisons of [ancestral populations](http://www.1000genomes.org/category/frequently-asked-questions/population) cataloged by the 1000 Genomes consortium (Africans, East Asian, European, South Asian) and an additional three-way comparison for Admixed American (Native American, European and African). We also provide multiplex primer pools for these AIMs sets. You do not need to install CATS if you decide to use primers provided.
 
-1. 
+CATS is written in Python 2.7 and depends on numpy and scipy. You can either install the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, CATS depends on [yamPCR](http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html) which is written in Perl. In order for yamPCR to function properly, you need to: 
+
+1. Download and install [BioPerl](http://www.bioperl.org/wiki/Installing_BioPerl)
+
+2. Download and install [Algorithm::Numerical::Shuffle](http://search.cpan.org/~abigail/Algorithm-Numerical-Shuffle-2009110301/lib/Algorithm/Numerical/Shuffle.pm)
+
+3. Download and install [Getopt::long](http://search.cpan.org/~jv/Getopt-Long-2.47/lib/Getopt/Long.pm)
+
+The easiest way to install these module is to use [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm)
+
+4. Modify the yamPCR.pl program under section "Parameter need to be customized"
+
+**TODO: add blast binary and hg19 reference genome to yamPCR directory**
+
+In addition, you should install [VCFtools](http://vcftools.sourceforge.net/), [PLINK2](https://www.cog-genomics.org/plink2) and [ADMIXTURE](https://www.genetics.ucla.edu/software/admixture/) and add them to your PATH.
 
 Example
 --------
 
+In this example, suppose we need to estimate the ancestry proportion of individuals with European and African origins. 
+
+### Step 1: 
+
+Download the latest 1000 Genomes genotype data and panel file:
+
+```
+for i in $(seq 1 22); do
+  wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz
+done 
+wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel
+```
+
+### Step 2:
+
+Filter out variants with global allele frequency less than 0.05. These variants are unlikely to be informative for ancestry inference so we filter them out to speed up downstream computation.
+
+```
+for i in {1..22}; do
+  vcftools --gzvcf ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz --recode --recode-INFO-all --maf 0.05 --stdout | gzip -c > ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz
+done 
+vcf-concat ALL.chr{1..22}.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz | gzip -c > ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz
+```
+
+### Step 3:
+
+Calculate allele frequencies of European and African populations. 
+
+```
+for pop in {AFR,EUR}; do
+  pop_file="$pop.pop"
+  cat integrated_call_samples_v3.20130502.ALL.panel | grep $pop | awk '{print $1, $1, $2}' > $pop_file
+  plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --freq --make-bed --keep-allele-order --keep $pop_file --out $pop
+done 
+```
+
+### Step 4:
+
+Calculate global LD r2. Report r2 only when variants are within 2000kbps of each other and has r2 greater than 0.2:
+
+```
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k
+```
+
+### Step 5:
+
+Select AIMs markers optimized to distinguish Europeans from Africans:
+
+First populate aims_properties.txt with pathes to AFR.frq and EUR.frq, an example can be found here: 
+**TODO: make an example aims_properties.txt file**
+
+Next run AIMs_generator.py:
+
+```
+python AIMs_generator.py aims_properties.txt 
+```
+
+Note: Download pre-selected AIMs [here](TODO). 
+
+### Step 6:
+
+Design primer pools for AIMs in step 5. Each pool will contain 10 primer pairs. 
+
+**Warning: the step may take quite some time (1-2 days based on our experience)!**
+
+```
+python run_yamPCR.py AFR_EUR_500k_500.aims 10 <path/to/output/dir>
+```
+
+You will end up with files named primerPools_*.txt in your output_directory. 
+
+Next we add barcode adapters to each primer: 
+
+```
+cat primerPools_1.txt | python add_adaptor.py > primerPools_1.adaptor.txt
+```
+
+Note: download pre-designed multiplex primer pools [here](TODO)
+
+### Step 7:
+
+We want to know how closely the AIMs estimation matches the true ancestry proportions. The true ancestry proportions are calculated using all 1000 Genomes SNPs. 
+
+```
+ls -v primerPool_*.txt > primerPoolList.txt
+calc_ancestry_proportions.py -p AFR,EUR -l primerPoolList.txt
+```
+
+### Step 8:
+
+Visualize the correlation between AIMs estimation and true ancestry proportions. Here we assume 35 primer pools are designed: 
+
+```
+Rscript plot_ancestry_r2_vs_num_AIMs.r AFR,EUR 35
+```
+
+The resulting plot looks like: 
+
+<p align="center">
+  <img src="_images/AFR.EUR.ancestry_r2_vs_num_AIMs.png" style="width: 500px;"/>
+<p/>
+
+It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999 correlation with the true ancestry proportions. However, since some primer pairs fail during PCR, you may want to double the number and use the first 15 primer pools.
+
+### Step 9:
+
+Microfluidic multiplex PCR and sequencing: 
+
+1. Order multiplex primers 
+
+Order primer plate using any service you are comfortable with. Here we provide a template for ThermoFisher/Invitrogen
+
+
+### Step 10: 
+
+Map the fastq files: 
+
+***TODO***
+
+### Step 11: 
+
+Call genotype using GATK: 
+
+***TODO***
+
+### Step 12: 
+
+Estimate ancestry proportions: 
+
+***TODO***
+
 Citation
 --------
-
 
 
