@@ -146,21 +146,47 @@ It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999
 
 ### Step 9:
 
-Microfluidic multiplex PCR and sequencing: 
+Purchase multiplex primers 
 
-1. Order multiplex primers 
+*Note: You only need to perform this step once. The volumn of primers you purchase in this step will be sufficient for many iterations of this pipeline*
 
-Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](_example/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. 
+Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](https://github.com/boshliu/CATS/raw/gh-pages/_examples/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows: 
+
+![example_primer_plate_annotated](./_images/primer_plate_example_annotated.png)
+
+Below are the parameters we use: 
+
+Parameter       Value
+-----------   ----------
+Size           96-wells
+Volume         360 ul
+Scale          25 nmole
+Purification   Desalted
+Buffer         TE
+Ship Format    Ambient
+Normaliztion   Volumn and Concentration
+Norm. Volume   80 ul
+Norm. Conc.    50 uM
+Pooling        None
+
+Warning: It generally takes Invitrogen a week or two to ship the oligo plates. Plan accordingly!
 
 
 ### Step 10: 
 
-Map the fastq files: 
+Microfluidic multiplex PCR (mmPCR) and sequencing: 
 
-***TODO***
+Don't be intimidated by the name - mmPCR is merely a efficient way of doing your day-to-day PCR. Instead of amplifying a single locus, mmPCR amplifies up to 960 loci of 48 samples at the same time. In our experience, mmPCR saves lots of money. Once you get use to the protocol, it will save you time too! You can read the [paper](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) if interested. 
 
+Below is the workflow of mmPCR taken from the paper: 
+
+![mmPCR workflow](_images/mmPCR_workflow.png)
+
+1. Mix all primer pairs for each primer pool, then follow the [protocol](_download/aa-2-primer-qr-c1.pdf) to perform mmPCR/
+
+2. Barcode: 
 ### Step 11: 
-
+Map the fastq files: 
 Call genotype using GATK: 
 
 ***TODO***
