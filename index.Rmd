@@ -15,6 +15,8 @@ CATS uses [microfluidic multiplex PCR](http://www.nature.com/nmeth/journal/v11/n
 
 Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.   
 
+Download
+---------
 
 Installation 
 -------------
@@ -182,22 +184,83 @@ Below is the workflow of mmPCR taken from the paper:
 
 ![mmPCR workflow](_images/mmPCR_workflow.png)
 
-1. Mix all primer pairs for each primer pool, then follow the [protocol](_download/aa-2-primer-qr-c1.pdf) to perform mmPCR/
+1. microfluidic PCR.
 
-2. Barcode: 
+Mix all primer pairs for each primer pool, then follow the [protocol](https://github.com/boshliu/CATS/raw/gh-pages/_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
+
+2. barcoding
+
+Barcode each samples to distinguish one from another during the analysis step. <insert link once rui replies> 
+
+3. Sequencing 
+
+Sequencing procedures can vary depending on the instruments available in your institution/company. You should use **single-end** sequencing and sequence at least **75 bases**. This is because the location of the AIMs marker is designed to be within 75 bases from the start of the forward read. We recommend sequencing to 100X coverage to account for uneven amplification during the PCR procedure. 
+
 ### Step 11: 
-Map the fastq files: 
-Call genotype using GATK: 
 
-***TODO***
+Map the fastq files using your favorite mapper, for example:
 
-### Step 12: 
+```
+bwa mem -M -R '@RG\tID:group1\tSM:sample1\tPL:illumina\tLB:lib1\tPU:unit1' hg19.fa sample1.fq.gz > sample1.sam
+samtools view -uhbS sample1.sam | samtools sort - sample1.sorted
+```
 
-Estimate ancestry proportions: 
+### Step 12:
 
-***TODO***
+Call genotype using GATK, for example: 
+
+```
+java -Xmx4g -jar GenomeAnalysisTK.jar \
+  -T HaplotypeCaller \
+  -R hg19.fa \
+  --genotyping_mode GENOTYPE_GIVEN_ALLELES \
+  --alleles 1000genomes_phase3v5.vcf \
+  -I sample1.sorted.bam \
+  -L aims_list.txt \
+  -stand_emit_conf 10 \ 
+  -stand_call_conf 30 \ 
+  -o sample1.vcf
+```
+
+Since we know the marker positions and genotype, we use the -L flag to restrict the positions and set the --genotype_mode to be GENOTYPE_GIVEN_ALLELES, which tell GATK to only report variants included in 1000genomes_phase3v5.vcf.
+
+### Step 13: 
+
+We will use ADMIXTURE to estimate ancestry proportions, but first we need to convert the genotypes from VCF to PLINK's bed format.
+
+```
+plink --vcf sample1.snps.indels.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample1
+```
+
+Of course, we also need to extract the genotype of African and European individuals at AIMs sites from 1000 Genomes vcf file
+
+```
+cat integrated_call_samples_v3.20130502.ALL.panel | grep -e AFR -e EUR | awk '{print $1, $1, $2}' > AFR.EUR.pop
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --keep-allele-order --keep AFR.EUR.pop --extract aims_list.snpid --make-bed --out AFR.EUR
+```
+
+Next we merge our samples with 1000 genomes individuals: 
+
+```
+plink --bfile AFR.EUR --bmerge sample1.bed sample1.bim sample1.fam --make-bed --out sample1_AFR.EUR_merge
+```
+
+Finally, we estimate ancestry proportions using ADMIXTURE:
+
+```
+admixture sample1_AFR.EUR_merge.bed 2 
+```
+
+And that's it! Whew! 
+
 
 Citation
 --------
+TBD
+
+Contact
+--------
+Boxiang Liu <bliu2 at stanford dot edu> 
+Stephen Montgomery <smontgom at stanford dot edu>
 
 
