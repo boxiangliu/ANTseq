@@ -259,8 +259,9 @@ Citation
 TBD
 
 Contact
---------
-Boxiang Liu <bliu2 at stanford dot edu> 
-Stephen Montgomery <smontgom at stanford dot edu>
+-------- 
+Questions? Please contact us!  
+Boxiang Liu: bliu2@stanford.edu   
+Stephen Montgomery: smontgom@stanford.edu  
 
 
