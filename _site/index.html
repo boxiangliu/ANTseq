@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
-
+<link rel="stylesheet" href="stylesheets/github-light.css">
 
 <title></title>
 
@@ -65,6 +65,9 @@ Cheap Ancestry determination with Targeted Sequencing
 <p>CATS is a pipeline to determine the ancestral origins of DNA samples.</p>
 <p>CATS uses <a href="http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html">microfluidic multiplex PCR</a> to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework.</p>
 <p>Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.</p>
+</div>
+<div id="download" class="section level2">
+<h2>Download</h2>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -247,24 +250,30 @@ samtools view -uhbS sample1.sam | samtools sort - sample1.sorted</code></pre>
   -L aims_list.txt \
   -stand_emit_conf 10 \ 
   -stand_call_conf 30 \ 
-  -o sample1.snps.indels.vcf</code></pre>
+  -o sample1.vcf</code></pre>
 <p>Since we know the marker positions and genotype, we use the -L flag to restrict the positions and set the –genotype_mode to be GENOTYPE_GIVEN_ALLELES, which tell GATK to only report variants included in 1000genomes_phase3v5.vcf.</p>
 </div>
 <div id="step-13" class="section level3">
 <h3>Step 13:</h3>
 <p>We will use ADMIXTURE to estimate ancestry proportions, but first we need to convert the genotypes from VCF to PLINK’s bed format.</p>
-<pre><code>plink --vcf sample1.snps.indels.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample1.snps</code></pre>
-<div id="todo" class="section level4">
-<h4>TODO</h4>
-<ol style="list-style-type: decimal">
-<li>how to merge two plink bed files.</li>
-<li>add admixture command example.</li>
-</ol>
-</div>
+<pre><code>plink --vcf sample1.snps.indels.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample1</code></pre>
+<p>Of course, we also need to extract the genotype of African and European individuals at AIMs sites from 1000 Genomes vcf file</p>
+<pre><code>cat integrated_call_samples_v3.20130502.ALL.panel | grep -e AFR -e EUR | awk '{print $1, $1, $2}' &gt; AFR.EUR.pop
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --keep-allele-order --keep AFR.EUR.pop --extract aims_list.snpid --make-bed --out AFR.EUR</code></pre>
+<p>Next we merge our samples with 1000 genomes individuals:</p>
+<pre><code>plink --bfile AFR.EUR --bmerge sample1.bed sample1.bim sample1.fam --make-bed --out sample1_AFR.EUR_merge</code></pre>
+<p>Finally, we estimate ancestry proportions using ADMIXTURE:</p>
+<pre><code>admixture sample1_AFR.EUR_merge.bed 2 </code></pre>
+<p>And that’s it! Whew!</p>
 </div>
 </div>
 <div id="citation" class="section level2">
 <h2>Citation</h2>
+<p>TBD</p>
+</div>
+<div id="contact" class="section level2">
+<h2>Contact</h2>
+<p>Questions? Please contact us!<br />Boxiang Liu: <a href="mailto:bliu2@stanford.edu">bliu2@stanford.edu</a><br />Stephen Montgomery: <a href="mailto:smontgom@stanford.edu">smontgom@stanford.edu</a></p>
 </div>
 
 

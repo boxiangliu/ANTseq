@@ -1,8 +1,10 @@
 ---
-output: 
+output:
   html_document:
-    self_contained: true
+    theme: spacelab
+    highlight: tango
 ---
+
 <center> <h1>CATS</h1> </center>
 
 <center> <h3>Cheap Ancestry determination with Targeted Sequencing</h3> </center>
@@ -265,3 +267,4 @@ Boxiang Liu: bliu2@stanford.edu
 Stephen Montgomery: smontgom@stanford.edu  
 
 
+<a href="#top">Back to top</a>
