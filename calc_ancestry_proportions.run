@@ -3,9 +3,10 @@
 CALC_ANCESTRY_PROPORTIONS="/srv/persistent/bliu2/ancestry/scripts/calc_ancestry_proportions.py" 
 MULTIPLEXPRIMERS_DIR="/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers"; cd $MULTIPLEXPRIMERS_DIR
 
-populations=(AFR \
+populations=(
+# AFR \
 EAS \
-EUR \
+# EUR \
 SAS)
 
 
@@ -29,10 +30,10 @@ for i in $(seq 1 $((npops-1))); do
 	done 
 done 
 
-cd $MULTIPLEXPRIMERS_DIR/AFR.AMR.EUR
-ls -v primerPool_*.txt > primerPoolList.txt
-python -u $CALC_ANCESTRY_PROPORTIONS -p AFR,AMR,EUR -l primerPoolList.txt &> calc_ancestry_proportions.log &
-pids="$pids $!"
-echo "AFR.AMR.EUR; pid: $!"
+# cd $MULTIPLEXPRIMERS_DIR/AFR.AMR.EUR
+# ls -v primerPool_*.txt > primerPoolList.txt
+# python -u $CALC_ANCESTRY_PROPORTIONS -p AFR,AMR,EUR -l primerPoolList.txt &> calc_ancestry_proportions.log &
+# pids="$pids $!"
+# echo "AFR.AMR.EUR; pid: $!"
 
 wait $pids

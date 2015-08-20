@@ -11,7 +11,7 @@ AFR,EAS \
 AFR,EUR \
 AFR,SAS \
 EAS,EUR \
-# EAS,SAS,20150817 \
+EAS,SAS \
 EUR,SAS)
 
 ##run add_adaptor.py, for all pairs of populations:
@@ -20,9 +20,14 @@ for i in $(seq 1 $numContrast); do
 
 	pop_contrast=${pop_contrasts[$((i-1))]}
 	wd=$admixture_dir/${pop_contrast//,/.}; cd $wd
-	numPools=$(ls primerPool_*.txt | wc -l)
 
+	## remove previous generated primerPool_*.adaptor.txt files:
+	mv primerPool_*.adaptor.txt $ancestry/trashcan
+
+	numPools=$(ls primerPool_*.txt | wc -l)
+	echo "add adaptors for populations $pop_contrast"
 	for j in $(seq 1 $numPools); do
+
 		cat primerPool_$j.txt | python $add_adaptor > primerPool_$j.adaptor.txt
 	done
 
