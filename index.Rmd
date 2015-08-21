@@ -266,5 +266,12 @@ Questions? Please contact us!
 Boxiang Liu: bliu2@stanford.edu   
 Stephen Montgomery: smontgom@stanford.edu  
 
+Miscellaneous 
+-------------
+
+The cat whose name is butters, for which this project is named after. 
+
+![butters](_images/butters.jpg)
+
 
 <a href="#top">Back to top</a>
