@@ -2,33 +2,31 @@
 
 CALC_ANCESTRY_PROPORTIONS="/srv/persistent/bliu2/ancestry/scripts/calc_ancestry_proportions.py" 
 MULTIPLEXPRIMERS_DIR="/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers"; cd $MULTIPLEXPRIMERS_DIR
+genPrimerPoolList="/srv/persistent/bliu2/ancestry/scripts/genPrimerPoolList.py"
 
-populations=(
-# AFR \
-EAS \
-# EUR \
-SAS)
+pop_contrasts=(AFR.AMR.EUR \
+AFR.EAS \
+AFR.EUR \
+AFR.SAS \
+EAS.EUR \
+EAS.SAS \
+EUR.SAS)
 
+for pop_contrast in ${pop_contrasts[*]}; do
 
+	cd $MULTIPLEXPRIMERS_DIR/$pop_contrast
+	rm $pop_contrast.cumPrimerPool_*
 
-npops=${#populations[*]}
-nmarkers=500
-pids=""
-for i in $(seq 1 $((npops-1))); do
-	for j in $(seq $((i+1)) $npops); do 
-
-		pop1=${populations[$((i-1))]}
-		pop2=${populations[$((j-1))]}
-		cd $MULTIPLEXPRIMERS_DIR/$pop1.$pop2
-
-		##generate primer pool list:
-		ls -v primerPool_*.txt > primerPoolList.txt
-		##estimate ancestry proportions
-		python -u $CALC_ANCESTRY_PROPORTIONS -p $pop1,$pop2 -l primerPoolList.txt &> calc_ancestry_proportions.log &
-		pids="$pids $!"
-		echo "$pop1 and $pop2; pid: $!"
-	done 
+	##generate primer pool list:
+	cat primerPoolMerged.txt | python $genPrimerPoolList > primerPoolList.sorted.txt
+	
+	##estimate ancestry proportions
+	python -u $CALC_ANCESTRY_PROPORTIONS -p ${pop_contrast//./,} -l primerPoolList.sorted.txt --noWGS &> calc_ancestry_proportions.log &
+	
+	pids="$pids $!"
+	echo "$pop_contrast; pid: $!"
 done 
+wait $pids
 
 ##old stuff
 # populations=(

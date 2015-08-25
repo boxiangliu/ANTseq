@@ -56,7 +56,7 @@ for (n in 1:numPools) {
 
 ##rename columns: 
 names(r2)[-1] = paste0("pop", seq(3))
-write.table(r2,sprintf("%s.ancestry_r2_vs_num_AIMs.txt", paste(pops, collapse = ".")), quote = F, col.names = T, row.names = F)
+write.table(data.frame(npool = seq(nrow(r2)),r2),sprintf("%s.ancestry_r2_vs_num_AIMs.txt", paste(pops, collapse = ".")), quote = F, col.names = T, row.names = F)
 ##melt to long format: 
 r2_long = melt(r2, id.vars = "nmarkers", variable.name = 'pop', value.name = 'r2')
 

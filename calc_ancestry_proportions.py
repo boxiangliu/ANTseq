@@ -41,23 +41,7 @@ def gen_pop_file(pops, exe = True):
 		pass 
 	return pop_file
 
-# def make_plink_bed_from_vcf(pops, markers_fname = None, output_prefix = None, log_fname = os.devnull):
-# 	'''make plink bed, bim and fam files'''
 
-# 	pop_fname = gen_pop_file(pops, exe = False)
-
-# 	if output_prefix == None: output_prefix = ".".join(pops)
-
-# 	if markers_fname != None:
-# 		with open(log_fname, 'w') as out:
-# 			subprocess.call([PLINK, "--vcf", TGP_VCF, "--double-id", "--snps-only", "--keep-allele-order", "--keep", pop_fname, "--extract", markers_fname, "--make-bed", "--out", output_prefix], stdout = out)
-# 		print "making plink bed file, keeping " + " ".join(pops) + "and markers in " + markers_fname
-# 	else:
-# 		with open(log_fname, 'w') as out:
-# 			subprocess.call([PLINK, "--vcf", TGP_VCF, "--double-id", "--snps-only", "--make-bed", "--keep-allele-order", "--keep", pop_fname, "--out", output_prefix], stdout = out)
-# 		print "making plink bed file, keeping " + " ".join(pops) + "and all markers."
-	
-# 	return  "%s.bed"%output_prefix
 
 
 def extract_pops_and_markers(pops, markers_fname = None, output_prefix = None, log_fname = os.devnull, bed_prefix = TGP_BED_PREFIX):
@@ -120,6 +104,7 @@ def calc_ancestry_proportions(pops, markers_fname = None):
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--populations", required = True, type = str, help = "populations, e.g. EAS,EUR,SAS")
 parser.add_argument("-l", "--primerPoolList", required = True, type = str, help = "list of primer pools.")
+parser.add_argument("--noWGS", action = "store_true")
 args = parser.parse_args()
 
 ##start timer: 
@@ -132,12 +117,16 @@ if not os.path.exists("./tmp"): os.mkdir("./tmp")
 pops = [pop for pop in args.populations.strip().split(",")]
 numpops = len(pops)
 primerPoolList_fname = args.primerPoolList
+noWGS = args.noWGS
 
 ##generate pop file: 
 pop_fname = gen_pop_file(pops)
 
 ##calculate ancestry proportions using whole genome: 
-calc_ancestry_proportions(pops, None)
+if noWGS:
+	pass 
+else: 
+	calc_ancestry_proportions(pops, None)
 
 ##read list of primer pools:
 with open(primerPoolList_fname, 'r') as f:
@@ -159,7 +148,7 @@ for primerPool_fname in primerPoolList:
 	cumPrimerPool += primerPool 
 
 	##make markers file:
-	cumPrimerPool_fname = "./tmp/cumPrimerPool_%i.snpid"%poolNum
+	cumPrimerPool_fname = "./tmp/cumPrimerPool_%i"%poolNum
 	with open(cumPrimerPool_fname,'w') as f:
 		f.write("\n".join(cumPrimerPool))
 
