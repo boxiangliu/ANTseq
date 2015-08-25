@@ -11,7 +11,7 @@ AFR,EAS \
 AFR,EUR \
 AFR,SAS \
 EAS,EUR \
-# EAS,SAS,20150817 \
+EAS,SAS \
 EUR,SAS)
 
 ##run scatterPlot_ancestry_proportions, for all pairs of populations:

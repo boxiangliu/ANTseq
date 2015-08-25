@@ -15,7 +15,7 @@ EUR.SAS)
 for pop_contrast in ${pop_contrasts[*]}; do
 
 	cd $MULTIPLEXPRIMERS_DIR/$pop_contrast
-	rm $pop_contrast.cumPrimerPool_*
+	# rm $pop_contrast.cumPrimerPool_*
 
 	##generate primer pool list:
 	cat primerPoolMerged.txt | python $genPrimerPoolList > primerPoolList.sorted.txt
