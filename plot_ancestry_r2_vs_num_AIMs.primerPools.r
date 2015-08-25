@@ -1,8 +1,8 @@
 ##plot the correlation of AIMs and true ancestry proportions agains the number of AIMs.  
 ##usage:
-##Rscript plot_ancestry_r2_vs_num_AIMs.r pop1,pop2[,pop3,...] numPools
+##Rscript plot_ancestry_r2_vs_num_AIMs.primerPools.r pop1,pop2[,pop3,...] numPools
 ##example: 
-##Rscript plot_ancestry_r2_vs_num_AIMs.r AFR,EUR 35
+##Rscript plot_ancestry_r2_vs_num_AIMs.primerPools.r AFR,EUR 35
 
 
 #######
@@ -23,11 +23,10 @@ reorder_cols <- function(wgs, aims) {
 	return(aims_reorder)
 }
 
-######
+#####
 #main
-######
+#####
 ##read command line args: 
-options(echo=TRUE) # if you want see commands in output file
 args <- R.utils::commandArgs(trailingOnly = TRUE)
 pops = strsplit(args[1], ",")[[1]]
 numPops = length(pops)
@@ -57,7 +56,7 @@ for (n in 1:numPools) {
 
 ##rename columns: 
 names(r2)[-1] = paste0("pop", seq(3))
-
+write.table(r2,sprintf("%s.ancestry_r2_vs_num_AIMs.txt", paste(pops, collapse = ".")), quote = F, col.names = T, row.names = F)
 ##melt to long format: 
 r2_long = melt(r2, id.vars = "nmarkers", variable.name = 'pop', value.name = 'r2')
 

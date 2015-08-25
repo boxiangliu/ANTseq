@@ -1,0 +1,27 @@
+#!bin/bash 
+ancestry="/srv/persistent/bliu2/ancestry"
+combineAIMsInfoWithPrimers="$ancestry/scripts/combineAIMsInfoWithPrimers.r"
+wd="/srv/persistent/bliu2/ancestry/AIMS_selection"; cd $wd
+
+PRIMER_DIR_ARRAY=(multiplexPrimers/AFR.AMR.EUR \
+multiplexPrimers/AFR.EAS \
+multiplexPrimers/AFR.EUR \
+multiplexPrimers/AFR.SAS \
+multiplexPrimers/EAS.EUR \
+multiplexPrimers/EAS.SAS \
+multiplexPrimers/EUR.SAS)
+
+
+AIMS_FILE_ARRAY=(AIMs_noSubpop/AFR.AMR.EUR/AFR_AMR_EUR_446.Galanter.orderedByIn.chrPos.aims \
+AIMs_noSubpop/AFR.EAS/AFR_EAS_500k_500.sorted.aims \
+AIMs_noSubpop/AFR.EUR/AFR_EUR_500k_500.sorted.aims \
+AIMs_noSubpop/AFR.SAS/AFR_SAS_500k_500.sorted.aims \
+AIMs_noSubpop/EAS.EUR/EAS_EUR_500k_500.sorted.aims \
+AIMs/EAS.SAS/EAS_SAS_500k_500.sorted.aims \
+AIMs/EUR.SAS/EUR_SAS_500k_500.sorted.aims)
+
+n=${#AIMS_FILE_ARRAY[*]}
+
+for i in $(seq 1 $n); do
+	Rscript $combineAIMsInfoWithPrimers ${PRIMER_DIR_ARRAY[$((i-1))]} ${AIMS_FILE_ARRAY[$((i-1))]}
+done 
