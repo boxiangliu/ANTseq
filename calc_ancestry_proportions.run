@@ -30,6 +30,34 @@ for i in $(seq 1 $((npops-1))); do
 	done 
 done 
 
+##old stuff
+# populations=(
+# # AFR \
+# EAS \
+# # EUR \
+# SAS)
+
+
+
+# npops=${#populations[*]}
+# nmarkers=500
+# pids=""
+# for i in $(seq 1 $((npops-1))); do
+# 	for j in $(seq $((i+1)) $npops); do 
+
+# 		pop1=${populations[$((i-1))]}
+# 		pop2=${populations[$((j-1))]}
+# 		cd $MULTIPLEXPRIMERS_DIR/$pop1.$pop2
+
+# 		##generate primer pool list:
+# 		ls -v primerPool_*.txt > primerPoolList.txt
+# 		##estimate ancestry proportions
+# 		python -u $CALC_ANCESTRY_PROPORTIONS -p $pop1,$pop2 -l primerPoolList.txt &> calc_ancestry_proportions.log &
+# 		pids="$pids $!"
+# 		echo "$pop1 and $pop2; pid: $!"
+# 	done 
+# done 
+
 # cd $MULTIPLEXPRIMERS_DIR/AFR.AMR.EUR
 # ls -v primerPool_*.txt > primerPoolList.txt
 # python -u $CALC_ANCESTRY_PROPORTIONS -p AFR,AMR,EUR -l primerPoolList.txt &> calc_ancestry_proportions.log &
