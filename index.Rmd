@@ -15,10 +15,13 @@ CATS is a pipeline to determine the ancestral origins of DNA samples.
 
 CATS uses [microfluidic multiplex PCR](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework. 
 
-Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.   
+Ancestry determination has traditionally been done with microarrays, which costs about $50-100 per sample. CATS achieves comparable accuracy under the same amout of time, but cost as little as $10-30. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.   
 
 Download
 ---------
+[Download primers](https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools)
+
+[Download the git repository](https://github.com/boshliu/CATS/) 
 
 Installation 
 -------------
@@ -101,8 +104,6 @@ Next run AIMs_generator.py:
 python AIMs_generator.py aims_properties.txt 
 ```
 
-Note: Download pre-selected AIMs [here](TODO). 
-
 ### Step 6:
 
 Design primer pools for AIMs in step 5. Each pool will contain 10 primer pairs. 
@@ -121,7 +122,7 @@ Next we add barcode adapters to each primer:
 cat primerPools_1.txt | python add_adaptor.py > primerPools_1.adaptor.txt
 ```
 
-Note: download pre-designed multiplex primer pools [here](TODO)
+Note: download pre-designed multiplex primer pools [here](https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools)
 
 ### Step 7:
 

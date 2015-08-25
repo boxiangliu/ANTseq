@@ -58,10 +58,12 @@ Cheap Ancestry determination with Targeted Sequencing
 <h2>Introduction</h2>
 <p>CATS is a pipeline to determine the ancestral origins of DNA samples.</p>
 <p>CATS uses <a href="http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html">microfluidic multiplex PCR</a> to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework.</p>
-<p>Ancestry determination has traditionally been done with microarrays, which costs about $100. CATS achieves comparable accuracy under the same amout of time, but cost as little as $20. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.</p>
+<p>Ancestry determination has traditionally been done with microarrays, which costs about $50-100 per sample. CATS achieves comparable accuracy under the same amout of time, but cost as little as $10-30. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.</p>
 </div>
 <div id="download" class="section level2">
 <h2>Download</h2>
+<p><a href="https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools">Download primers</a></p>
+<p><a href="https://github.com/boshliu/CATS/">Download the git repository</a></p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -118,7 +120,6 @@ done </code></pre>
 <p>First populate aims_properties.txt with pathes to AFR.frq and EUR.frq, an example can be found here: <strong>TODO: make an example aims_properties.txt file</strong></p>
 <p>Next run AIMs_generator.py:</p>
 <pre><code>python AIMs_generator.py aims_properties.txt </code></pre>
-<p>Note: Download pre-selected AIMs <a href="TODO">here</a>.</p>
 </div>
 <div id="step-6" class="section level3">
 <h3>Step 6:</h3>
@@ -128,7 +129,7 @@ done </code></pre>
 <p>You will end up with files named primerPools_*.txt in your output_directory.</p>
 <p>Next we add barcode adapters to each primer:</p>
 <pre><code>cat primerPools_1.txt | python add_adaptor.py &gt; primerPools_1.adaptor.txt</code></pre>
-<p>Note: download pre-designed multiplex primer pools <a href="TODO">here</a></p>
+<p>Note: download pre-designed multiplex primer pools <a href="https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools">here</a></p>
 </div>
 <div id="step-7" class="section level3">
 <h3>Step 7:</h3>
