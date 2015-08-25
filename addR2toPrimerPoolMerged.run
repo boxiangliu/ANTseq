@@ -1,0 +1,20 @@
+#!/bin/bash
+
+MULTIPLEXPRIMERS_DIR="/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers"; cd $MULTIPLEXPRIMERS_DIR
+addR2toPrimerPoolMerged="/srv/persistent/bliu2/ancestry/scripts/addR2toPrimerPoolMerged.r"
+
+pop_contrasts=(AFR.AMR.EUR \
+AFR.EAS \
+AFR.EUR \
+AFR.SAS \
+EAS.EUR \
+EAS.SAS \
+EUR.SAS)
+
+for pop_contrast in ${pop_contrasts[*]}; do
+
+	cd $MULTIPLEXPRIMERS_DIR/$pop_contrast
+
+	##add r2 to primerPoolMerged.txt
+	Rscript $addR2toPrimerPoolMerged primerPoolMerged.txt $pop_contrast.ancestry_r2_vs_num_AIMs.txt
+done 
