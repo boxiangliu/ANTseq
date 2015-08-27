@@ -6,7 +6,7 @@
 suppressMessages(library(data.table))
 suppressMessages(library(dplyr))
 suppressMessages(library(stringr))
-
+suppressMessages(library(reshape2))
 #####
 #main
 #####
@@ -22,4 +22,12 @@ for (primerPool_fname in primerPoolList){
 	names(r2List)[length(r2List)] = populations
 }
 
-r2List
+##reshape r2List to long format: 
+r2List_long = data.frame()
+for (i in length(r2List)) {
+	if (ncol(r2List[[i]]) == 1){
+		r2List_long = rbind(r2List_long, data.frame(r2 = r2List[[i]], pop = names(r2List)[[1]])
+	} else {
+		##TODO:melt data.frame
+	}
+}
