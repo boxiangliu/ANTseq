@@ -70,7 +70,7 @@ def call_admixture(plink_bed_fname, numpops, log_fname = os.devnull):
 	'''call admixture'''
 	numpops = str(numpops)
 	with open(log_fname, "w") as out: 
-		subprocess.call([ADMIXTURE, plink_bed_fname, numpops], stdout = out)
+		subprocess.call([ADMIXTURE, '-B', plink_bed_fname, numpops], stdout = out)
 	print "running admixture for %s..."%plink_bed_fname
 	Q_fname = plink_bed_fname.replace('bed', '%s.Q'%numpops)
 	return Q_fname

@@ -22,7 +22,7 @@ primerPoolMerged = fread(primerPoolMerged_fname)
 
 if (ncol(fread(r2_fname)) == 4){
 	##if a pair of population, e.g. AFR.EUR:
-	r2 = fread(r2_fname) %>% select(poolRank = npool, r2 = pop1) 	
+	r2 = fread(r2_fname) %>% select(poolRank = npool, r2 = pop1) 
 	primerPoolR2 = cbind(primerPoolMerged, merge(primerPoolMerged, r2, by = "poolRank") %>% select(r2))
 } else if (ncol(fread(r2_fname)) == 5) {
 	##for 3 populations like AFR.AMR.EUR
