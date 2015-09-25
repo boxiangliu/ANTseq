@@ -1,0 +1,20 @@
+ancestry="/srv/persistent/bliu2/ancestry"
+MULTIPLEXPRIMERS_DIR="$ancestry/AIMS_selection/multiplexPrimers"; cd $MULTIPLEXPRIMERS_DIR
+appendR2andRMSEtoPrimerPoolMerged="$ancestry/scripts/appendR2andRMSEtoPrimerPoolMerged.r"
+
+populationGroups=(AFR.AMR.EUR \
+AFR.EAS \
+AFR.EUR \
+AFR.SAS \
+EAS.EUR \
+EAS.SAS \
+EUR.SAS)
+for populationGroup in ${populationGroups[*]}; do
+	
+	cd $MULTIPLEXPRIMERS_DIR/$populationGroup
+	wholeGenomeQfileName="admixture/$populationGroup.?.Q"
+	popFileName="plink/$populationGroup.pop"
+
+	##add r2 to primerPoolMerged.txt
+	Rscript $appendR2andRMSEtoPrimerPoolMerged primerPoolMerged.txt admixture/ $wholeGenomeQfileName $popFileName
+done

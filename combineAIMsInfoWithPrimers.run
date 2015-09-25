@@ -24,4 +24,4 @@ n=${#AIMS_FILE_ARRAY[*]}
 
 for i in $(seq 1 $n); do
 	Rscript $combineAIMsInfoWithPrimers ${PRIMER_DIR_ARRAY[$((i-1))]} ${AIMS_FILE_ARRAY[$((i-1))]}
-done 
+done

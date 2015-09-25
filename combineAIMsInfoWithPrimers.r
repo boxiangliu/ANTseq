@@ -3,9 +3,9 @@
 ######
 #setup
 ######
-library(dplyr)
-library(data.table)
-library(gtools)
+suppressMessages(library(dplyr))
+suppressMessages(library(data.table))
+suppressMessages(library(gtools))
 
 #####
 #main
