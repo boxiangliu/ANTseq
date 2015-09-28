@@ -12,7 +12,8 @@ suppressMessages(library(grid))
 ##########
 #constants
 ##########
-FIGURES_DIR = "AIMS_selection/figures"
+ANCESTRY_DIR = "/srv/persistent/bliu2/ancestry"
+FIGURES_DIR = paste(ANCESTRY_DIR, "AIMS_selection/figures", sep = "/")
 
 #########
 #function
@@ -111,7 +112,7 @@ plot_rmse = function(rmse){
 #main
 #####
 population_groups = c("AFR.AMR.EUR", "AFR.EAS", "AFR.EUR", "AFR.SAS", "EAS.EUR", "EAS.SAS", "EUR.SAS")
-filename_template = "AIMS_selection/multiplexPrimers/%s/primerPoolMerged.txt"
+filename_template = paste(ANCESTRY_DIR, "AIMS_selection/multiplexPrimers/%s/primerPoolMerged.txt", sep = "/")
 
 # read ancestry correlation columns of all population_groups into one data.frame:
 r2 = read_r2(population_group, filename_template)

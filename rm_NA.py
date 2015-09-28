@@ -8,6 +8,7 @@ flist=["ACB.chrPos.frq",
 "AFR.chrPos.frq",
 "AFR-ACB-ASW.chrPos.frq",
 "AMR.chrPos.frq",
+"AMR.chrPos.inferred.frq",
 "ASW.chrPos.frq",
 "BEB.chrPos.frq",
 "CDX.chrPos.frq",
@@ -56,3 +57,5 @@ for fname in flist:
 				continue
 			else:
 				fout.write(line)
+
+print "Done!"
