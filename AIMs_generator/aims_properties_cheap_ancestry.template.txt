@@ -1,0 +1,11 @@
+ldfile=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/global_r2_0.2_window_2000k.chrPos.ld
+ldthresh=0.2
+posfile=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/global_r2_0.2_window_2000k.chrPos.NArm.bim
+hetthresh=0.01
+distances=500000
+nraims=500
+populations=pop1,pop2
+pop1.frq=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/pop1.chrPos.NArm.frq
+pop2.frq=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/pop2.chrPos.NArm.frq
+strategy=In
+outstem=/srv/persistent/bliu2/ancestry/AIMS_selection/AIMs/pop1_pop2_

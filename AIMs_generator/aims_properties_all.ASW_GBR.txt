@@ -1,0 +1,11 @@
+ldfile=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/global.chrPos.ld
+ldthresh=0.2
+posfile=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/global.chrPos.bim
+hetthresh=0.001
+distances=500000
+nraims=500
+populations=ASW,GBR
+ASW.frq=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/ASW.chrPos.frq
+GBR.frq=/srv/persistent/bliu2/ancestry/AIMS_selection/alleleFreq/GBR.chrPos.frq
+strategy=In
+outstem=/srv/persistent/bliu2/ancestry/AIMS_selection/AIMs/ASW_GBR_aims

@@ -1,0 +1,12 @@
+ldfile=/srv/persistent/bliu2/shared/1000genomes/phase3v5/test/global_chrPos.ld
+ldthresh=0.2
+posfile=/srv/persistent/bliu2/shared/1000genomes/phase3v5/test/global_chrPos.bim
+hetthresh=0.001
+distances=500000
+nraims=1
+populations=ASW,GBR
+ASW.frq=/srv/persistent/bliu2/shared/1000genomes/phase3v5/test/ASW2.frq
+GBR.frq=/srv/persistent/bliu2/shared/1000genomes/phase3v5/test/GBR2.frq
+strategy=In
+propmultiIn=0.25
+outstem=ASW_GBR_aims

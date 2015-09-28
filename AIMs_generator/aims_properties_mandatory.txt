@@ -1,0 +1,3 @@
+ldfile=sac.ld
+posfile=sac.bim
+populations=african_non_san,african_san,east_asian,european,south_asian

@@ -1,0 +1,13 @@
+ldfile=sac.ld
+ldthresh=0.2
+posfile=sac.bim
+hetthresh=0.001
+distances=100000,1000000
+nraims=100,150,200,250
+populations=african_non_san,african_san,east_asian,european,south_asian
+european.frq=eur.frq
+strategy=In
+propmultiIn=0.25
+european.subpopulations=tsi,q
+tsi.frq=hapmap_tsi.frq
+outstem=SAC_aims_
