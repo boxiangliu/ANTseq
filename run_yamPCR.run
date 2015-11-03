@@ -3,6 +3,7 @@ run_yamPCR="/srv/persistent/bliu2/ancestry/scripts/run_yamPCR.py"
 aims_dir="/srv/persistent/bliu2/ancestry/AIMS_selection"
 primers_dir="/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers_sortedAIMs"
 
+# AIMs marker (direct output from AIMs_generator.py)
 # aimsFileArray=(AFR.SAS/AFR_SAS_500k_500.aims \
 # EAS.SAS/EAS_SAS_500k_500.aims \
 # AMR.EUR/AMR_EUR_500k_500.aims \
@@ -14,14 +15,15 @@ primers_dir="/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers_sort
 # EAS.EUR/EAS_EUR_500k_500.aims \
 # EUR.SAS/EUR_SAS_500k_500.aims)
 
-aimsFileArray=(AIMs_noSubpop/AFR.EAS/AFR_EAS_500k_500.sorted.aims \
-AIMs_noSubpop/AFR.EUR/AFR_EUR_500k_500.sorted.aims \
-AIMs_noSubpop/AFR.SAS/AFR_SAS_500k_500.sorted.aims \
-AIMs_noSubpop/EAS.EUR/EAS_EUR_500k_500.sorted.aims \
-AIMs_noSubpop/AFR.AMR.EUR/AFR_AMR_EUR_446.Galanter.orderedByIn.chrPos.aims \
-AIMs/EAS.SAS/EAS_SAS_500k_500.sorted.aims \
-AIMs/EUR.SAS/EUR_SAS_500k_500.sorted.aims \
-)
+# Sorted AIMs markers (by In).
+# aimsFileArray=(AIMs_noSubpop/AFR.EAS/AFR_EAS_500k_500.sorted.aims \
+# AIMs_noSubpop/AFR.EUR/AFR_EUR_500k_500.sorted.aims \
+# AIMs_noSubpop/AFR.SAS/AFR_SAS_500k_500.sorted.aims \
+# AIMs_noSubpop/EAS.EUR/EAS_EUR_500k_500.sorted.aims \
+# AIMs_noSubpop/AFR.AMR.EUR/AFR_AMR_EUR_446.Galanter.orderedByIn.chrPos.aims \
+# AIMs/EAS.SAS/EAS_SAS_500k_500.sorted.aims \
+# AIMs/EUR.SAS/EUR_SAS_500k_500.sorted.aims \
+# )
 
 pids=""
 for aimsFile in ${aimsFileArray[*]}; do

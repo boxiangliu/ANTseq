@@ -9,22 +9,23 @@
 # 			AIMS_selection/multiplexPrimers/AFR.EUR/admixture \
 # 			AIMS_selection/multiplexPrimers/AFR.EUR/admixture/AFR.EUR.2.Q
 #			AIMS_selection/alleleFreq/AFR.EUR.pop
-######
-#setup
-######
+
+######------ setup --------######
 library(data.table)
 library(dplyr)
 library(stringr)
 library(lazyeval)
+library(gtools)
 
-####
-#fun
-####
+
+####---------functions---------####
 guess.number.of.population = function(QfileName){
 	# description:
 	# guess the number of populations based on
 	# the Q file.
-	numPopulations = as.integer(str_extract(QfileName, pattern = "(?<=([A-Z]{3}\\.){2,5}(cumPrimerPool_[0-9]{1,2}\\.){0,1})([0-9])(?=\\.Q)"))
+	# numPopulations = as.integer(str_extract(QfileName, pattern = "(?<=([A-Z]{3}\\.){2,5}(cumPrimerPool_[0-9]{1,2}\\.){0,1})([0-9])(?=\\.Q)"))
+	numPopulations = as.integer(str_extract(QfileName, pattern = "(?<=\\.)([0-9])(?=\\.Q)"))
+	
 	message(sprintf("%i populations (based on '%s')", numPopulations, QfileName))
 	return(numPopulations)
 }
@@ -47,7 +48,7 @@ order.Q2.by.Q1 <- function(Q1, Q2) {
 	# the order can be c(1,1,3). when this happens, an warning is issued. 
 	corr = cor(Q1, Q2)
 	order = apply(corr, 1, which.max)
-	if (sum(duplicated(order)) > 0) warning("ambiguous ordering: ", order)
+	if (sum(duplicated(order)) > 0) warning("ambiguous ordering: ", order, immediate. = T)
 	return(order)
 }
 
@@ -113,13 +114,14 @@ calculateAncestryCorrelation.character = function(x, pattern, Q){
 	# calculate the Pearson correlation between file Q and 
 	# all files specified by [directory, pattern]
 	fileNames = list.files(path = x, pattern = pattern, full.names = T)
-
+  fileNames = mixedsort(fileNames)
+  
 	r2 = data.frame()
-
 	for (fileName in fileNames){
 		# TODO: debug this for loop.
 
 		file = fread(fileName)
+    message(fileName) # debug
 		columnOrder = order.Q2.by.Q1(Q, file)
 		setcolorder(file, columnOrder)
 
@@ -231,25 +233,30 @@ appendToPrimerPoolMerged = function(primerPoolMerged, addition){
 	return(primerPoolMerged)
 }
 
-#####
-#main
-#####
+
+#####------------- main --------------####
 # read [primerPoolMerged] and [Q_bias and Q_se directory]
 list('primerPoolMergedFileName', 'Qdirectory', 'wgQfileName', 'popFileName') %=% commandArgs(trailingOnly = T)
 
-primerPoolMergedFileName="primerPoolMerged.txt"
-Qdirectory="admixture/"
-wgQfileName="admixture/EAS.SAS.2.Q"
-popFileName="plink/EAS.SAS.pop"
+
 
 # read primerPoolMerged:
 primerPoolMerged = fread(primerPoolMergedFileName)
 
+
+
 # read whole-genome Q file: 
 wgQ = fread(wgQfileName)
 
+
+
+
 # calculate r^2 between AIMs and genomic ancestry: 
 r2 = calculateAncestryCorrelation(Qdirectory, pattern = "cumPrimerPool_[0-9]{1,2}\\.[2-5]\\.Q$", Q = wgQ)
+
+
+
+
 
 # label columns with appropriate names:
 columnNames = matchColumnsAndPopulations(wgQfileName, popFileName)
@@ -276,3 +283,64 @@ primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmax)
 # write primerPoolMergedAndQsummary to txt
 write.table(primerPoolMerged, file = primerPoolMergedFileName, row.names = F, col.names = T, quote = F, sep = '\t')
 message(paste('finished', Qdirectory))
+
+
+####----------- debug --------------####
+# read merged primer pool file:  
+setwd('/Volumes/ancestry/')
+primerPoolMergedFileName = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/primerPoolMerged.txt"
+primerPoolMerged = fread(primerPoolMergedFileName)
+
+
+
+
+# read whole-genome Q file: 
+wgQfileName = "AIMS_selection/ADMIXTURE/five_superpopulation/ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.5.Q"
+wgQ = fread(wgQfileName)
+head(wgQ)
+dim(wgQ)
+
+
+
+# calculate ancestry correlation:
+Qdirectory = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/admixture"
+r2 = calculateAncestryCorrelation(Qdirectory,pattern = "cumPrimerPool_[0-9]{1,2}\\.[2-5]\\.Q$", Q = wgQ)
+
+
+
+
+
+# get colume names for wgQ: 
+popFileName = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/plink/AFR.AMR.EAS.EUR.SAS.pop"
+col_names = matchColumnsAndPopulations(wgQfileName = wgQfileName, popFileName = popFileName)
+
+
+
+
+
+# plot ancestry R2 vs the number of pools:
+png('AIMS_selection/figures/ancestry_r2_5way_AIMs_set.png')
+plot(r2$numPools, r2$V1.r2, type = 'o', col = 1, ylim = c(0.1,1), xlim = c(0,50), xlab = 'Number of pools', ylab = 'Ancestry R2', main = '5-way AIMs set')
+mtext('500 markers, no heterogeneity filter')
+points(r2$numPools, r2$V2.r2, type = 'o', col = 2)
+points(r2$numPools, r2$V3.r2, type = 'o', col = 3)
+points(r2$numPools, r2$V4.r2, type = 'o', col = 4)
+points(r2$numPools, r2$V5.r2, type = 'o', col = 5)
+legend('topright', col_names, col = 1:5, pch = 1, lty = 1)
+dev.off()
+
+
+
+
+
+
+
+
+
+# TODO:debug: 
+AIMs_Q_38 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_38.5.Q")
+AIMs_Q_11 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_11.5.Q")
+AIMs_Q_16 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_16.5.Q")
+head(AIMs_Q_11)
+head(wgQ)
+cor(AIMs_Q_11, wgQ)
