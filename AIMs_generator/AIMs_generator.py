@@ -19,6 +19,8 @@ from scipy import stats
 import operator
 from pdb import set_trace as t
 
+
+
 def calc_sigma(af1, af2):
 	return af1 + af2
 
@@ -74,23 +76,26 @@ def calculate_ld(ldfile, rsq_threshold):
 	lddict = {}
 	while True:
 		try:
-			for total, line in enumerate(file(ldfile)):
-				pass
-			for i, line in enumerate(file(ldfile)):
-				if i > 0:
-					print_progress('Importing LD file', 50, i, total)
-					line = line.strip().split()
-					if float(line[-1]) > rsq_threshold:
-						snpA = line[2]
-						snpB = line[5] # if PLINK r2--with-freqs is specified show change snpB = line[5] -> snpB = line[6]; Bosh 20150709 
-						if snpA in lddict:
-							lddict[snpA].append(snpB)
-						else:
-							lddict[snpA] = [snpB]
-						if snpB in lddict:
-							lddict[snpB].append(snpA)
-						else:
-							lddict[snpB] = [snpA]
+			# count the number of lines in ldfile
+			with open(ldfile) as f: 
+				for total, line in enumerate(f):
+					pass
+			with open(ldfile) as f: 
+				for i, line in enumerate(f):
+					if i > 0:
+						print_progress('Importing LD file', 50, i, total)
+						line = line.strip().split()
+						if float(line[-1]) > rsq_threshold:
+							snpA = line[2]
+							snpB = line[5] # if PLINK r2--with-freqs is specified show change snpB = line[5] -> snpB = line[6]; Bosh 20150709 
+							if snpA in lddict:
+								lddict[snpA].append(snpB)
+							else:
+								lddict[snpA] = [snpB]
+							if snpB in lddict:
+								lddict[snpB].append(snpA)
+							else:
+								lddict[snpB] = [snpA]
 			print
 			return lddict
 		except:
@@ -105,13 +110,15 @@ def get_bim(filename):
 	dictionary of alleles (minor, major).
 	'''
 	try:
-		print 'Reading in position data...'
-		posdict = dict([[line.strip().split()[1], \
-			(line.strip().split()[0], line.strip().split()[3])] \
-			for line in file(filename)])
-		alleledict = dict([[line.strip().split()[1], \
-			(line.strip().split()[4], line.strip().split()[5])] 
-			for line in file(filename)])
+		print 'Reading in position data from %s...'%filename
+		with open(filename) as f: 
+			posdict = dict([[line.strip().split()[1], \
+				(line.strip().split()[0], line.strip().split()[3])] \
+				for line in f])
+		with open(filename) as f: 
+			alleledict = dict([[line.strip().split()[1], \
+				(line.strip().split()[4], line.strip().split()[5])] 
+				for line in f])
 		return (posdict, alleledict)
 	except:
 		sys.exit('File error; bim file is not in the correct format.')
@@ -123,9 +130,9 @@ def get_freq(population, nsnps, filename):
 	This function will read in a plink "frq" file to get minor allele frequencies.
 	'''
 	try:
-		print 'Reading allele frequency data...'
-		freq = file(filename)
-		freq.readline()
+		print 'Reading allele frequency data from %s...'%filename
+		freq = open(filename)
+		freq.readline() # get rid of header line. 
 		if nsnps == -1:
 			return [line.strip().split() for line in freq.readlines()]
 		else:
@@ -140,6 +147,7 @@ def get_freq(population, nsnps, filename):
 				else:
 					sys.exit('File error; incorrect allele frequency file format.')
 			return snps	
+		freq.close() 
 	except:
 		sys.exit('File error; incorrect allele frequency file format.')
 
@@ -220,7 +228,7 @@ def output_pairwise_aims(aims, pop1, pop2, outfilename, n = -1):
 	parameter that specifies how many AIMs to output.  It defaults to -1 (all)
 	'''
 	print 'Writing pairwise AIMs statistics for %s/%s populations to file %s' %(pop1, pop2, outfilename)
-	outfile = file(outfilename, 'w')
+	outfile = open(outfilename, 'w')
 	outfile.write('snp\tchr\tposition\t%s_allele_freq\t%s_allele_freq\tsigma\tdelta\tFst\tIn\n' %(pop1, pop2))
 	lines = 0
 	for line in aims:
@@ -229,6 +237,7 @@ def output_pairwise_aims(aims, pop1, pop2, outfilename, n = -1):
 		else:
 			outfile.write('%s\n' % ('\t'.join([str(val) for val in line])))
 			lines += 1
+	outfile.close()
 	return
 
 
@@ -304,7 +313,7 @@ def output_pop_aims(aims, population, outfilename, n = -1):
 	parameter that specifies how many AIMs to output.  It defaults to -1 (all)
 	'''
 	print 'Writing AIMs statistics for %s population to file %s' %(population, outfilename)
-	outfile = file(outfilename, 'w')
+	outfile = open(outfilename, 'w')
 	outfile.write('snp\tchr\tposition\tallele_frequency\tLSBL(Fst)\tLSBL(In)\n')
 	lines = 0
 	for line in aims:
@@ -313,6 +322,7 @@ def output_pop_aims(aims, population, outfilename, n = -1):
 		else:
 			outfile.write('%s\n' % ('\t'.join([str(val) for val in line[0:6]])))
 			lines += 1
+	outfile.close()
 	return
 
 
@@ -442,11 +452,11 @@ def print_lsbl_aims(aims, filename, pop1frq, pop2frq, pop3frq, populations):
 	pop1dict = dict([[snp[1],snp[4]] for snp in pop1frq])
 	pop2dict = dict([[snp[1],snp[4]] for snp in pop2frq])
 	pop3dict = dict([[snp[1],snp[4]] for snp in pop3frq])
-	outfile = file(filename, 'w')
+	outfile = open(filename, 'w')
 	outfile.write('snp\tchr\tposition\t%s_AF\t%s_AF\t%s_AF\tpopulation\tLSBL(Fst)\tLSBL(In)\n' %(populations[0], populations[1], populations[2]))		
 	for i, aim in enumerate(aims):
 		outfile.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (aim[0], aim[1], aim[2], pop1dict[aim[0]], pop2dict[aim[0]], pop3dict[aim[0]], aim[6], aim[4], aim[5]))
-
+	outfile.close()
 
 
 def chi(table):
@@ -725,7 +735,7 @@ def print_aims(aims, populations, freq_pops, aims_paired_pops, filename):
 	'''
 	Prints output file for the In and pairedIn strategies
 	'''
-	outfile = file(filename, 'w')
+	outfile = open(filename, 'w')
 	outfile.write('snp\tchr\tposition')
 	pop_stats = []
 	for i in range(0, len(populations)):
@@ -750,7 +760,7 @@ def print_aims(aims, populations, freq_pops, aims_paired_pops, filename):
 		for i, combo in enumerate(aims_paired_pops):
 			outfile.write('\t' + str(paired_stats[i][aim[0]]))
 		outfile.write('\n')
-
+	outfile.close()
 
 
 def print_progress(msg, pos, i, total):
@@ -764,7 +774,10 @@ def print_progress(msg, pos, i, total):
 
 
 if __name__ == '__main__':
+	# bosh 20151103
+	print 'started program.' 
 
+	# end bosh
 	if len(sys.argv) > 1:
 		properties = get_properties(sys.argv[1])
 	else:
@@ -876,3 +889,5 @@ if __name__ == '__main__':
 				aims = get_paired_In_aims(aims, posdict, lddict, In_aims, aims_paired_pops, \
 						exclude, distance, nr_paired_aims)
 				print_aims(aims, populations, freq_pops, aims_paired_pops, outfile + '.aims')
+
+	file_prof.close()

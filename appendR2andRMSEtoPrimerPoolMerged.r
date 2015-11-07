@@ -262,23 +262,43 @@ r2 = calculateAncestryCorrelation(Qdirectory, pattern = "cumPrimerPool_[0-9]{1,2
 columnNames = matchColumnsAndPopulations(wgQfileName, popFileName)
 r2 = replaceColumnNames(r2, columnNames) 
 
+
+
+
+
 # read Qbias and Qse: 
 numPopulations = guess.number.of.population(wgQfileName)
 Qbias = read.Qbias(Qdirectory, numPopulations, wgQfileName)
 Qse = read.Qse(Qdirectory, numPopulations, wgQfileName)
 
+
+
+
+
 # calculate the root mean squared error (RMSE) of ancestry coefficient by pool:
 Qmerge = merge.Qbias.and.Qse(Qbias, Qse)
 Qmerge = appendRMSE(Qmerge, numPopulations)
+
+
+
+
 
 # calculate the mean and max of RMSE grouped by number of AIMs: 
 RMSEmean = calculateRMSEmean(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
 RMSEmax = calculateRMSEmax(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
 
+
+
+
+
 # append RMSE mean and max to primerPoolMerged: 
 primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, r2)
 primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmean)
 primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmax)
+
+
+
+
 
 # write primerPoolMergedAndQsummary to txt
 write.table(primerPoolMerged, file = primerPoolMergedFileName, row.names = F, col.names = T, quote = F, sep = '\t')
@@ -288,6 +308,8 @@ message(paste('finished', Qdirectory))
 ####----------- debug --------------####
 # read merged primer pool file:  
 setwd('/Volumes/ancestry/')
+setwd('/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/admixture')
+
 primerPoolMergedFileName = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/primerPoolMerged.txt"
 primerPoolMerged = fread(primerPoolMergedFileName)
 
@@ -319,8 +341,8 @@ col_names = matchColumnsAndPopulations(wgQfileName = wgQfileName, popFileName = 
 
 
 # plot ancestry R2 vs the number of pools:
-png('AIMS_selection/figures/ancestry_r2_5way_AIMs_set.png')
-plot(r2$numPools, r2$V1.r2, type = 'o', col = 1, ylim = c(0.1,1), xlim = c(0,50), xlab = 'Number of pools', ylab = 'Ancestry R2', main = '5-way AIMs set')
+png('AIMS_selection/figures/ancestry_r2_5way_AIMs_set.no_filter.png')
+plot(r2$numPools, r2$V1.r2, type = 'o', col = 1, ylim = c(0.1,1), xlim = c(0,60), xlab = 'Number of pools', ylab = 'Ancestry R2', main = '5-way AIMs set')
 mtext('500 markers, no heterogeneity filter')
 points(r2$numPools, r2$V2.r2, type = 'o', col = 2)
 points(r2$numPools, r2$V3.r2, type = 'o', col = 3)
