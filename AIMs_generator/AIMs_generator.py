@@ -890,4 +890,3 @@ if __name__ == '__main__':
 						exclude, distance, nr_paired_aims)
 				print_aims(aims, populations, freq_pops, aims_paired_pops, outfile + '.aims')
 
-	file_prof.close()
