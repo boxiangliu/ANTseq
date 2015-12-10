@@ -1,8 +1,9 @@
 ---
 output:
   html_document:
-    theme: spacelab
     highlight: tango
+    theme: spacelab
+  word_document: default
 ---
 
 <center> <h1>CATS</h1> </center>
@@ -260,6 +261,7 @@ And that's it! Whew!
 Citation
 --------
 TBD
+
 
 Contact
 -------- 
