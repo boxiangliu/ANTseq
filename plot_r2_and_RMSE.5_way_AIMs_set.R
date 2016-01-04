@@ -148,11 +148,39 @@ r2 = calculateAncestryCorrelation(Qdirectory, pattern = "cumPrimerPool_[0-9]{1,2
 r2 = r2[1:num_pools,] # discard empty pool 37
 setnames(r2, c('pool',col_names))
 
-# plot rmse:
+# reshape RMSE and R2 dataframes:
 rmse$pool = 1:num_pools
 rmse_long = melt(data = rmse, measure.vars = col_names, variable.name = 'population', value.name = 'value')
 rmse_long$value_name = 'RMSE'
 r2_long = melt(data = r2, measure.vars = col_names, variable.name = 'population', value.name = 'value')
 r2_long$value_name = 'R2'
-ggplot(rbind(rmse_long, r2_long), aes(x = pool, y = value, color = population)) + facet_grid(value_name~., scales = 'free') + geom_line() + geom_point(size = 3, alpha = 0.8) + theme_bw() + ylab('') + xlab('Number of pools') + theme(axis.text = element_text(size = 20), axis.title = element_text(size = 25, face = 'bold'), legend.title = element_text(size = 25), legend.text = element_text(size = 20), strip.text = element_text(size = 20), legend.position = c(0.8, 0.7)) + scale_color_discrete(name = 'Population')
-ggsave('AIMS_selection/figures/ancestry_r2_rmse_5way_AIMs_set.SAS_filter.propmultiIn_0.0.real.png', width = 7.9, height = 7.9)
+
+
+# plot RMSE and R2: 
+p = ggplot(rbind(rmse_long, r2_long), aes(x = pool, y = value, color = population)) +
+ facet_grid(value_name~., scales = 'free', labeller=label_both) + 
+ geom_line() + 
+ geom_point(size = 3, alpha = 0.8) + 
+ theme_bw() + 
+ theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20))
+
+
+# change legend position: 
+p = p + theme(legend.title = element_text(size = 20), legend.text = element_text(size = 20), legend.position = c(0.7, 0.7))
+
+
+# adding x and y axis titles:
+p = p + ylab(expression(paste("        RMSE              ","Correlation (", R^{2}, ")"))) + xlab('Number of pools')
+
+
+
+# change legend title and label: 
+p = p + scale_color_discrete(name="",
+                           breaks=c("EUR","AMR","SAS","AFR","EAS"),
+                           labels=c("European", "Native American", "South Asian", "African", "East Asian"))
+
+
+# remove grid and facet strip:
+p = p + theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank()) + theme(strip.background=element_blank(), strip.text.y = element_blank())
+
+ggsave('AIMS_selection/figures/ancestry_r2_rmse_5way_AIMs_set.SAS_filter.propmultiIn_0.0.real.pdf', plot = p, width = 6, height = 6)
