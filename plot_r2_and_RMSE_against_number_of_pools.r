@@ -8,11 +8,14 @@ suppressMessages(library(reshape2))
 suppressMessages(library(stringr))
 suppressMessages(library(gridExtra))
 suppressMessages(library(grid))
+rm(list = ls())
 
 ##########
 #constants
 ##########
-ANCESTRY_DIR = "/srv/persistent/bliu2/ancestry"
+# ANCESTRY_DIR = "/srv/persistent/bliu2/ancestry"
+ANCESTRY_DIR = "/Volumes/ancestry"
+
 FIGURES_DIR = paste(ANCESTRY_DIR, "AIMS_selection/figures", sep = "/")
 
 #########
@@ -35,7 +38,7 @@ select_r2_columns = function(primer_pool_merged, column_index){
 	return(r2)
 }
 
-read_r2 = function(population_group, filename_template){
+read_r2 = function(population_groups, filename_template){
 	# description:
 	# read primerPoolMerged.txt specified by [population_group, filename_template], 
 	# select r2 columns, and `rbind` them.    
@@ -59,29 +62,32 @@ plot_r2 = function(r2){
 	# plot r2 against number of pools.
 	p = ggplot(r2, aes(x = poolRank, y = r2, color = population)) + 
 		geom_line() + geom_point() + 
-		facet_grid(.~population_group) +
+		facet_grid(population_group~., scales = 'free') +
 		xlab("Number of pools") + ylab(expression(bold(R^"2"))) + scale_color_discrete(name = "Population") + 
 		theme_bw() + 
 		theme(legend.position = c(1,0), legend.justification = c(1,0), legend.title = element_text(size = 15), legend.text = element_text(size = 12), axis.title = element_text(size = 20, face = "bold"), axis.text = element_text(size = 12)) 
 	return(p)
 }
 
+
+
 select_rmse_columns = function(primer_pool_merged, column_index){
 	# description:
 	# select rmse columns from [primer_pool_merged] 
 	# value: 
 	# a data.frame (or data.table) in long format. 
-	rmse = melt(primer_pool_merged, id.vars = "poolRank", measure.vars = column_index)
-	rmse = rmse %>% mutate(population = str_split_fixed(variable, "\\.", n = 2)[,1], statistic = str_split_fixed(variable, "\\.", n = 2)[,2], variable = NULL)
-	rmse = rmse %>% mutate(statistic = str_replace(statistic, "rmse", ""))
+	rmse = melt(primer_pool_merged, id.vars = "poolRank", measure.vars = column_index, variable.name = "population", value.name = "rmse")
+	rmse = rmse %>% mutate(population = str_replace(population, "\\.rmse", ""))
 	return(rmse)
 }
 
-read_rmse = function(population_group, filename_template){
+
+
+read_rmse = function(population_groups, filename_template){
 	# description:
 	# read primerPoolMerged.txt specified by [population_group, filename_template], 
 	# select rmseMean and rmseMax columns, and `rbind` them.    
-	rmse = data.frame(poolRank = integer(), value = numeric(), population = character(), statistic = character(), population_group = character())
+	rmse = data.frame(poolRank = integer(), population = character(), rmse = numeric(), population_group = character())
 	for (population_group in population_groups){
 		# read primerPoolMerged:
 		primer_pool_merged_filename = sprintf(filename_template, population_group)
@@ -101,7 +107,7 @@ plot_rmse = function(rmse){
 	# plot (mean, max) of RMSE against number of pools.
 	p = ggplot(rmse, aes(x = poolRank, y = value, color = population, linetype = statistic, group = interaction(population, statistic))) + 
 		geom_line() + geom_point() + 
-		facet_grid(.~population_group) + 
+		facet_grid(population_group~.) + 
 		xlab("Number of pools") + ylab("RMSE") + scale_color_discrete(name = "Population") + scale_linetype_discrete(name = "Statistic") +
 		theme_bw() +
 		theme(legend.position = c(1,1), legend.justification = c(1,1), legend.title = element_text(size = 15), legend.text = element_text(size = 12), axis.title = element_text(size = 20, face = "bold"), axis.text = element_text(size = 12)) 
@@ -112,15 +118,70 @@ plot_rmse = function(rmse){
 #main
 #####
 population_groups = c("AFR.AMR.EUR", "AFR.EAS", "AFR.EUR", "AFR.SAS", "EAS.EUR", "EAS.SAS", "EUR.SAS")
-filename_template = paste(ANCESTRY_DIR, "AIMS_selection/multiplexPrimers/%s/primerPoolMerged.txt", sep = "/")
+filename_template = paste(ANCESTRY_DIR, "AIMS_selection/multiplexPrimers/pairwise/%s/primerPoolMerged.txt", sep = "/")
 
-# read ancestry correlation columns of all population_groups into one data.frame:
-r2 = read_r2(population_group, filename_template)
-r2_plot = plot_r2(r2)
-ggsave(filename = paste(FIGURES_DIR, "r2.pdf", sep = "/"), r2_plot, width = 30, height = 6)
+# read ancestry correlation coefficient:
+r2 = read_r2(population_groups, filename_template)
+
+# rename population factors:
+levels(r2$population_group) = str_replace_all(levels(r2$population_group), '\\.', '+')
+
+# plot correlation coefficient for pairs in {AFR, EAS, EUR, SAS}
+p = ggplot(r2 %>% filter(population_group != "AFR+AMR+EUR"), aes(x = poolRank, y = r2)) + 
+	geom_line() + geom_point() + 
+	facet_grid(population_group~., scales = 'free') +
+	xlab("Number of pools") + ylab(expression(R^"2")) + 
+	theme_bw() + 
+	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
+	theme(strip.text.y = element_text(size = 20)) + 
+	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank())
+ggsave('AIMS_selection/figures/r2.AFR_EAS_EUR_SAS.pdf',p, width = 6, height = 12)
+ggsave('AIMS_selection/figures/r2.AFR_EAS_EUR_SAS.png',p, width = 6, height = 12)
+
+# plot correlation coefficient for triplet AFR+EUR+AMR:
+p2 = ggplot(r2 %>% filter(population_group == "AFR+AMR+EUR"), aes(x = poolRank, y = r2, color = population)) + 
+	geom_line() + geom_point() + 
+	xlab("Number of pools") + ylab(expression(R^"2")) + 
+	theme_bw() + 
+	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
+	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank()) + 
+gsave('AIMS_selection/figures/r2.AFR_AMR_EUR.pdf',p2, width = 6, height = 6)
+ggsave('AIMS_selection/figures/r2.AFR_AMR_EUR.png',p2, width = 6, height = 6)
+
+
+
+# read RMSE:
+rmse = read_rmse(population_groups, filename_template)
+
+# rename RMSE factors levels:
+levels(rmse$population_group) = str_replace_all(levels(rmse$population_group), '\\.', '+')
 
 # plot RMSE mean and max against number of pools:
-rmse = read_rmse(population_group, filename_template)
-rmse_plot = plot_rmse(rmse)
-ggsave(filename = paste(FIGURES_DIR, "rmse.pdf", sep = "/"), rmse_plot, width = 30, height = 6)
+# plot correlation coefficient for pairs in {AFR, EAS, EUR, SAS}
+p3 = ggplot(rmse %>% filter(population_group != "AFR+AMR+EUR"), aes(x = poolRank, y = rmse)) + 
+	geom_line() + geom_point() + 
+	facet_grid(population_group~., scales = 'free') +
+	xlab("Number of pools") + ylab("RMSE") + 
+	theme_bw() + 
+	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
+	theme(strip.text.y = element_text(size = 20)) + 
+	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank())
+
+ggsave('AIMS_selection/figures/rmse.AFR_EAS_EUR_SAS.pdf',p3, width = 6, height = 12)
+ggsave('AIMS_selection/figures/rmse.AFR_EAS_EUR_SAS.png',p3, width = 6, height = 12)
+
+
+# plot RMSE for pairs in {AFR, EAS, EUR, SAS}:
+p4 = ggplot(rmse %>% filter(population_group == "AFR+AMR+EUR"), aes(x = poolRank, y = rmse, color = population)) + 
+	geom_line() + geom_point() + 
+	xlab("Number of pools") + ylab("RMSE") + 
+	theme_bw() + 
+	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
+	theme(strip.text.y = element_text(size = 20)) + 
+	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank()) +
+	theme(legend.title = element_text(size = 20), legend.text = element_text(size = 20), legend.position = c(0.7, 0.7)) + 
+	scale_color_discrete(name="",breaks=c("EUR","AMR","AFR"),labels=c("European", "Native American", "African"))
+
+ggsave('AIMS_selection/figures/rmse.AFR_AMR_EUR.pdf',p4, width = 6, height = 6)
+ggsave('AIMS_selection/figures/rmse.AFR_AMR_EUR.png',p4, width = 6, height = 6)
 
