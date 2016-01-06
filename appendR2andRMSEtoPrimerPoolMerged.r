@@ -52,55 +52,55 @@ order.Q2.by.Q1 <- function(Q1, Q2) {
 	return(order)
 }
 
-read_ = function(path, pattern, numPopulations, wgQfileName){
-	# description: 
-	# read files specified by [path] and [pattern] 
-	# into a data.frame (of long format).
-	# 
-	# note: 
-	# Q files associated with each [Q_bias|Q_se] must be present in the [path] directory too. 
-	# whole-genome Q file must also be present. 
+# read_ = function(path, pattern, numPopulations, wgQfileName){
+# 	# description: 
+# 	# read files specified by [path] and [pattern] 
+# 	# into a data.frame (of long format).
+# 	# 
+# 	# note: 
+# 	# Q files associated with each [Q_bias|Q_se] must be present in the [path] directory too. 
+# 	# whole-genome Q file must also be present. 
 
-	fileNames = list.files(pattern = pattern, full.names = T, path = path)
+# 	fileNames = list.files(pattern = pattern, full.names = T, path = path)
 
-	# read whole-genome Q file:
-	wgQ = fread(wgQfileName)
+# 	# read whole-genome Q file:
+# 	wgQ = fread(wgQfileName)
 
-	# read AIMs (Q_bias|Q_se) and associated Q files:
-	df = data.frame()
-	for (fileName in fileNames){
+# 	# read AIMs (Q_bias|Q_se) and associated Q files:
+# 	df = data.frame()
+# 	for (fileName in fileNames){
 
-		# read (Q_bias|Q_se) file:	
-		file = fread(fileName)
-		numPools = guessNumerOfPools(fileName)
+# 		# read (Q_bias|Q_se) file:	
+# 		file = fread(fileName)
+# 		numPools = guessNumerOfPools(fileName)
 
-		# read Q file:
-		QfileName = str_replace(fileName, pattern = str_match(string = pattern, pattern = "Q_se|Q_bias"), replacement = "Q")
-		Q = fread(QfileName)
+# 		# read Q file:
+# 		QfileName = str_replace(fileName, pattern = str_match(string = pattern, pattern = "Q_se|Q_bias"), replacement = "Q")
+# 		Q = fread(QfileName)
 		
-		# order columns according to wgQ:
-		setcolorder(file, order.Q2.by.Q1(wgQ, Q))
+# 		# order columns according to wgQ:
+# 		setcolorder(file, order.Q2.by.Q1(wgQ, Q))
 
-		setnames(file, sprintf("V%i", 1:numPopulations))
-		df = rbind(df, data.frame(file, numPools = numPools))
-	}
-	df = df %>% arrange(numPools)
-	return(df)
-}
+# 		setnames(file, sprintf("V%i", 1:numPopulations))
+# 		df = rbind(df, data.frame(file, numPools = numPools))
+# 	}
+# 	df = df %>% arrange(numPools)
+# 	return(df)
+# }
 
-read.Qbias = function(path, numPopulations, wgQfileName){
-	# description:
-	# read Q_bias files in [path] directory
-	df = read_(path, pattern = "Q_bias$", numPopulations, wgQfileName)
-	return(df)
-}
+# read.Qbias = function(path, numPopulations, wgQfileName){
+# 	# description:
+# 	# read Q_bias files in [path] directory
+# 	df = read_(path, pattern = "Q_bias$", numPopulations, wgQfileName)
+# 	return(df)
+# }
 
-read.Qse = function(path, numPopulations, wgQfileName){
-	# description:
-	# read Q_se files in [path] directory
-	df = read_(path, pattern = "Q_se$", numPopulations, wgQfileName)
-	return(df)
-}
+# read.Qse = function(path, numPopulations, wgQfileName){
+# 	# description:
+# 	# read Q_se files in [path] directory
+# 	df = read_(path, pattern = "Q_se$", numPopulations, wgQfileName)
+# 	return(df)
+# }
 
 calculateAncestryCorrelation = function(x, ...){
 	# description: 
@@ -118,10 +118,9 @@ calculateAncestryCorrelation.character = function(x, pattern, Q){
   
 	r2 = data.frame()
 	for (fileName in fileNames){
-		# TODO: debug this for loop.
 
 		file = fread(fileName)
-    message(fileName) # debug
+    	message(fileName) # debug
 		columnOrder = order.Q2.by.Q1(Q, file)
 		setcolorder(file, columnOrder)
 
@@ -149,23 +148,75 @@ calculateAncestryCorrelation.data.frame = function(x, Q){
 	return(r2)
 }
 
-merge.Qbias.and.Qse = function(Qbias, Qse){
-	# description:
-	# merge Qbias and Qse and 
-	# create new column rmse = sqrt(se^2 + bias^2) 
-	add.key.column = function(x){
-		# description: 
-		# append row number as a key column
-		x$key = seq(nrow(x))
-		return(x)
+calculateRMSE = function(x, ...){
+	# description: 
+	# generic method to calculate ancestry correlation
+	UseMethod("calculateRMSE")
+}
+
+
+calculateRMSE.character = function(x, pattern, Q){
+	# description: 
+	# calculate the root-mean-square error between file Q and 
+	# all files specified by [directory, pattern]
+	fileNames = list.files(path = x, pattern = pattern, full.names = T)
+  	fileNames = mixedsort(fileNames)
+  
+	rmse = data.frame()
+	for (fileName in fileNames){
+
+		file = fread(fileName)
+    	message(fileName) # debug
+		columnOrder = order.Q2.by.Q1(Q, file)
+		setcolorder(file, columnOrder)
+
+		numPools = guessNumerOfPools(fileName)
+		temp = calculateRMSE(file, Q)
+
+		numPopulations = suppressMessages(guess.number.of.population(fileName))
+		colnames(temp) = sprintf("V%i.rmse", 1:numPopulations)
+
+		rmse = rbind(rmse, data.frame(numPools = numPools, temp))
 	}
 
-	Qbias = add.key.column(Qbias)
-	Qse = add.key.column(Qse)
+	rmse = rmse %>% arrange(numPools)
+	return(rmse)
+} 
 
-	Qmerge = merge(Qbias, Qse, by = c("key", "numPools"), suffixes = c(".bias", ".se")) %>% arrange(key)
-	return(Qmerge)
+calculateRMSE.data.frame = function(x, Q){
+	# description: 
+	# calculate the root-mean-square error between the columns of x and Q.
+	# note: 
+	# 1. x and Q should have the same number of columns
+	# 2. x and Q should have the same column orders
+	# 3. x and Q can be swapped without changing the result (obviously!).
+	x = as.data.frame(x)
+	Q = as.data.frame(Q)
+	rmse = data.frame(matrix(0, nrow = 1, ncol = ncol(x)))
+	for (icol in 1:ncol(x)){
+		rmse[,icol] = sqrt(mean((x[,icol] - Q[,icol])^2))
+	}
+	return(rmse)
 }
+
+
+# merge.Qbias.and.Qse = function(Qbias, Qse){
+# 	# description:
+# 	# merge Qbias and Qse and 
+# 	# create new column rmse = sqrt(se^2 + bias^2) 
+# 	add.key.column = function(x){
+# 		# description: 
+# 		# append row number as a key column
+# 		x$key = seq(nrow(x))
+# 		return(x)
+# 	}
+
+# 	Qbias = add.key.column(Qbias)
+# 	Qse = add.key.column(Qse)
+
+# 	Qmerge = merge(Qbias, Qse, by = c("key", "numPools"), suffixes = c(".bias", ".se")) %>% arrange(key)
+# 	return(Qmerge)
+# }
 
 appendRMSE = function(Qmerge, numPopulations){
 	# description:
@@ -176,23 +227,23 @@ appendRMSE = function(Qmerge, numPopulations){
 	return(Qmerge)
 }
 
-calculateRMSEmean = function(Qmerge, numPopulations){
-	# description:
-	# calculate the mean of RMSE of each pool.
-	functionCalls = sapply(X = 1:numPopulations, FUN = function(i) interp("mean(x)", x = as.name(sprintf("V%i.rmse", i))))
-	names(functionCalls) = sprintf("V%i.rmseMean", 1:numPopulations)
-	Qsummary = Qmerge %>% group_by(numPools) %>% summarize_(.dots = functionCalls)
-	return(Qsummary)
-}
+# calculateRMSEmean = function(Qmerge, numPopulations){
+# 	# description:
+# 	# calculate the mean of RMSE of each pool.
+# 	functionCalls = sapply(X = 1:numPopulations, FUN = function(i) interp("mean(x)", x = as.name(sprintf("V%i.rmse", i))))
+# 	names(functionCalls) = sprintf("V%i.rmseMean", 1:numPopulations)
+# 	Qsummary = Qmerge %>% group_by(numPools) %>% summarize_(.dots = functionCalls)
+# 	return(Qsummary)
+# }
 
-calculateRMSEmax = function(Qmerge, numPopulations){
-	# description:
-	# calculate the max of RMSE of each pool.
-	functionCalls = sapply(X = 1:numPopulations, FUN = function(i) interp("max(x)", x = as.name(sprintf("V%i.rmse", i))))
-	names(functionCalls) = sprintf("V%i.rmseMax", 1:numPopulations)
-	Qsummary = Qmerge %>% group_by(numPools) %>% summarize_(.dots = functionCalls)
-	return(Qsummary)
-}
+# calculateRMSEmax = function(Qmerge, numPopulations){
+# 	# description:
+# 	# calculate the max of RMSE of each pool.
+# 	functionCalls = sapply(X = 1:numPopulations, FUN = function(i) interp("max(x)", x = as.name(sprintf("V%i.rmse", i))))
+# 	names(functionCalls) = sprintf("V%i.rmseMax", 1:numPopulations)
+# 	Qsummary = Qmerge %>% group_by(numPools) %>% summarize_(.dots = functionCalls)
+# 	return(Qsummary)
+# }
 
 matchColumnsAndPopulations = function(wgQfileName, popFileName){
 	# description:
@@ -245,6 +296,12 @@ primerPoolMerged = fread(primerPoolMergedFileName)
 
 
 
+# remove existing rmse and r2 columns: 
+primerPoolMerged = primerPoolMerged %>% select(-contains('r2')) %>% select(-contains('rmse'))
+
+
+
+
 # read whole-genome Q file: 
 wgQ = fread(wgQfileName)
 
@@ -265,27 +322,34 @@ r2 = replaceColumnNames(r2, columnNames)
 
 
 
-
 # read Qbias and Qse: 
-numPopulations = guess.number.of.population(wgQfileName)
-Qbias = read.Qbias(Qdirectory, numPopulations, wgQfileName)
-Qse = read.Qse(Qdirectory, numPopulations, wgQfileName)
+# numPopulations = guess.number.of.population(wgQfileName)
+# Qbias = read.Qbias(Qdirectory, numPopulations, wgQfileName)
+# Qse = read.Qse(Qdirectory, numPopulations, wgQfileName)
 
 
 
 
 
 # calculate the root mean squared error (RMSE) of ancestry coefficient by pool:
-Qmerge = merge.Qbias.and.Qse(Qbias, Qse)
-Qmerge = appendRMSE(Qmerge, numPopulations)
+# Qmerge = merge.Qbias.and.Qse(Qbias, Qse)
+# Qmerge = appendRMSE(Qmerge, numPopulations)
+rmse = calculateRMSE(Qdirectory, pattern = "cumPrimerPool_[0-9]{1,2}\\.[2-5]\\.Q$", Q = wgQ)
 
+
+
+
+
+# label columns with appropriate names:
+columnNames = matchColumnsAndPopulations(wgQfileName, popFileName)
+rmse = replaceColumnNames(rmse, columnNames) 
 
 
 
 
 # calculate the mean and max of RMSE grouped by number of AIMs: 
-RMSEmean = calculateRMSEmean(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
-RMSEmax = calculateRMSEmax(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
+# RMSEmean = calculateRMSEmean(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
+# RMSEmax = calculateRMSEmax(Qmerge, numPopulations) %>% replaceColumnNames(columnNames)
 
 
 
@@ -293,8 +357,8 @@ RMSEmax = calculateRMSEmax(Qmerge, numPopulations) %>% replaceColumnNames(column
 
 # append RMSE mean and max to primerPoolMerged: 
 primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, r2)
-primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmean)
-primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmax)
+primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, rmse)
+
 
 
 
@@ -303,66 +367,3 @@ primerPoolMerged = appendToPrimerPoolMerged(primerPoolMerged, RMSEmax)
 # write primerPoolMergedAndQsummary to txt
 write.table(primerPoolMerged, file = primerPoolMergedFileName, row.names = F, col.names = T, quote = F, sep = '\t')
 message(paste('finished', Qdirectory))
-
-
-####----------- debug --------------####
-# read merged primer pool file:  
-setwd('/Volumes/ancestry/')
-setwd('/srv/persistent/bliu2/ancestry/AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/admixture')
-
-primerPoolMergedFileName = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/primerPoolMerged.txt"
-primerPoolMerged = fread(primerPoolMergedFileName)
-
-
-
-
-# read whole-genome Q file: 
-wgQfileName = "AIMS_selection/ADMIXTURE/five_superpopulation/ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.5.Q"
-wgQ = fread(wgQfileName)
-head(wgQ)
-dim(wgQ)
-
-
-
-# calculate ancestry correlation:
-Qdirectory = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/admixture"
-r2 = calculateAncestryCorrelation(Qdirectory,pattern = "cumPrimerPool_[0-9]{1,2}\\.[2-5]\\.Q$", Q = wgQ)
-
-
-
-
-
-# get colume names for wgQ: 
-popFileName = "AIMS_selection/multiplexPrimers/AFR.AMR.EAS.EUR.SAS/AIMs_500/plink/AFR.AMR.EAS.EUR.SAS.pop"
-col_names = matchColumnsAndPopulations(wgQfileName = wgQfileName, popFileName = popFileName)
-
-
-
-
-
-# plot ancestry R2 vs the number of pools:
-png('AIMS_selection/figures/ancestry_r2_5way_AIMs_set.no_filter.png')
-plot(r2$numPools, r2$V1.r2, type = 'o', col = 1, ylim = c(0.1,1), xlim = c(0,60), xlab = 'Number of pools', ylab = 'Ancestry R2', main = '5-way AIMs set')
-mtext('500 markers, no heterogeneity filter')
-points(r2$numPools, r2$V2.r2, type = 'o', col = 2)
-points(r2$numPools, r2$V3.r2, type = 'o', col = 3)
-points(r2$numPools, r2$V4.r2, type = 'o', col = 4)
-points(r2$numPools, r2$V5.r2, type = 'o', col = 5)
-legend('topright', col_names, col = 1:5, pch = 1, lty = 1)
-dev.off()
-
-
-
-
-
-
-
-
-
-# TODO:debug: 
-AIMs_Q_38 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_38.5.Q")
-AIMs_Q_11 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_11.5.Q")
-AIMs_Q_16 = fread("admixture/AFR.AMR.EAS.EUR.SAS.cumPrimerPool_16.5.Q")
-head(AIMs_Q_11)
-head(wgQ)
-cor(AIMs_Q_11, wgQ)

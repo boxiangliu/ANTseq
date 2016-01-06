@@ -1,5 +1,5 @@
 ancestry="/srv/persistent/bliu2/ancestry"
-MULTIPLEXPRIMERS_DIR="$ancestry/AIMS_selection/multiplexPrimers"; cd $MULTIPLEXPRIMERS_DIR
+MULTIPLEXPRIMERS_DIR="$ancestry/AIMS_selection/multiplexPrimers/pairwise"; cd $MULTIPLEXPRIMERS_DIR
 appendR2andRMSEtoPrimerPoolMerged="$ancestry/scripts/appendR2andRMSEtoPrimerPoolMerged.r"
 
 populationGroups=(AFR.AMR.EUR \
