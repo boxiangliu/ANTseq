@@ -6,58 +6,45 @@ output:
   word_document: default
 ---
 
-<center> <h1>CATS</h1> </center>
+<center> <h1>ANTseq</h1> </center>
 
-<center> <h3>Cheap Ancestry determination with Targeted Sequencing</h3> </center>
+<center> <h3>Ancestry Inference through Microfluidic Multiplex PCR and Sequencing</h3> </center>
 
 Introduction 
 -------------
-CATS is a pipeline to determine the ancestral origins of DNA samples.  
+ANTseq is a pipeline to determine the ancestral origins of DNA samples.  
 
-CATS uses [microfluidic multiplex PCR](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework. 
+ANTseq uses [microfluidic multiplex PCR and sequencing](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html)(mmPCR-seq) to determine the genotypes at specific genetic loci called Ancestry Informative Markers (AIMs). Genotypes at these loci are subsequently used to estimate the ancestral composition using a likelihood framework. 
 
-Ancestry determination has traditionally been done with microarrays, which costs about $50-100 per sample. CATS achieves comparable accuracy under the same amout of time, but cost as little as $10-30. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, CATS requires genotyping information of only a few hundred loci.   
+Ancestry determination has traditionally been done with microarrays or conventional PCR. Comapred to microarrays, ANTseq achieves comparable accuracy under the same amout of time, but cost less and is more flexible in selection of loci. This is accomplished by leveraging multi-population whole genome information from the 1000 Genomes consortium. Instead of genotyping 300,000+ loci like most microarrays do, ANTseq only requires dozens to hundreds of loci. Compared to conventional PCR, ANTseq achieves comparable or superior accuracy, but is faster and costs magnitudes less by leveraging mmPCR-seq.
 
 Download
 ---------
-[Download primers](https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools)
 
-[Download the git repository](https://github.com/boshliu/CATS/) 
+We provide AIMs sets for 
+  1. Five-way comparisons of major continental populations (African, European, South Asian, East Asian and Native American) 
+  2. Pairwise comparisons of four continental populations (African, European, South Asian, East Asian)
+  3. A three-way comparison for Admixed Americans. Native Americans are ad-mixed with Europeans and Africans; the three-way configuration is more applicable in most cases than two separate pairwise comparisons. 
+  
+[Download primers](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/primerPools)
 
 Installation 
 -------------
+To use ANTseq, you need to download the [repository](https://github.com/boxiangliu/ANTseq/). ANTseq makes use of Python 2.7, numpy and scipy. You can either install the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, ANTseq uses [yamPCR](http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html) to design multiplex primer pools. The easiest way to install yamPCR dependencies is to use [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm). In addition, you should install [VCFtools](http://vcftools.sourceforge.net/), [PLINK2](https://www.cog-genomics.org/plink2) and [ADMIXTURE](https://www.genetics.ucla.edu/software/admixture/) and add them to your PATH.
 
-We provide AIMs sets for pairwise comparisons of [ancestral populations](http://www.1000genomes.org/category/frequently-asked-questions/population) cataloged by the 1000 Genomes consortium (Africans, East Asian, European, South Asian) and an additional three-way comparison for Admixed American (Native American, European and African). We also provide multiplex primer pools for these AIMs sets. You do not need to install CATS if you decide to use primers provided.
-
-CATS is written in Python 2.7 and depends on numpy and scipy. You can either install the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, CATS depends on [yamPCR](http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html) which is written in Perl. In order for yamPCR to function properly, you need to: 
-
-1. Download and install [BioPerl](http://www.bioperl.org/wiki/Installing_BioPerl)
-
-2. Download and install [Algorithm::Numerical::Shuffle](http://search.cpan.org/~abigail/Algorithm-Numerical-Shuffle-2009110301/lib/Algorithm/Numerical/Shuffle.pm)
-
-3. Download and install [Getopt::long](http://search.cpan.org/~jv/Getopt-Long-2.47/lib/Getopt/Long.pm)
-
-The easiest way to install these module is to use [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm)
-
-4. Modify the yamPCR.pl program under section "Parameter need to be customized"
-
-**TODO: add blast binary and hg19 reference genome to yamPCR directory**
-
-In addition, you should install [VCFtools](http://vcftools.sourceforge.net/), [PLINK2](https://www.cog-genomics.org/plink2) and [ADMIXTURE](https://www.genetics.ucla.edu/software/admixture/) and add them to your PATH.
-
-Example
+Instructions
 --------
-
-In this example, suppose we need to estimate the ancestry proportion of individuals with European and African origins. 
+The instructions here is specific to five-way comparison of major continental populations. You may adapt this to your own purpose by changing the ancestral populations.  
 
 ### Step 1: 
 
-Download the latest 1000 Genomes genotype data and panel file:
+Download the 1000 Genomes genotype data and panel file:
 
 ```
 for i in $(seq 1 22); do
   wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz
 done 
+
 wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel
 ```
 
@@ -69,12 +56,12 @@ Filter out variants with global allele frequency less than 0.05. These variants 
 for i in {1..22}; do
   vcftools --gzvcf ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz --recode --recode-INFO-all --maf 0.05 --stdout | gzip -c > ALL.chr$i.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz
 done 
+
 vcf-concat ALL.chr{1..22}.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz | gzip -c > ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz
 ```
 
 ### Step 3:
-
-Calculate allele frequencies of European and African populations. 
+Calculate allele frequencies of five continental populations. 
 
 ```
 for pop in {AFR,EUR}; do
@@ -123,7 +110,7 @@ Next we add barcode adapters to each primer:
 cat primerPools_1.txt | python add_adaptor.py > primerPools_1.adaptor.txt
 ```
 
-Note: download pre-designed multiplex primer pools [here](https://github.com/boshliu/CATS/raw/gh-pages/_download/primerPools)
+Note: download pre-designed multiplex primer pools [here](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/primerPools)
 
 ### Step 7:
 
@@ -156,7 +143,7 @@ Purchase multiplex primers
 
 *Note: You only need to perform this step once. The volumn of primers you purchase in this step will be sufficient for many iterations of this pipeline*
 
-Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](https://github.com/boshliu/CATS/raw/gh-pages/_examples/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows: 
+Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](https://github.com/boshliu/ANTseq/raw/gh-pages/_examples/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows: 
 
 ![example_primer_plate_annotated](./_images/primer_plate_example_annotated.png)
 
@@ -190,7 +177,7 @@ Below is the workflow of mmPCR taken from the paper:
 
 1. microfluidic PCR.
 
-Mix all primer pairs for each primer pool, then follow the [protocol](https://github.com/boshliu/CATS/raw/gh-pages/_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
+Mix all primer pairs for each primer pool, then follow the [protocol](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
 
 2. barcoding
 
