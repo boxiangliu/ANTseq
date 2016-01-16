@@ -26,7 +26,7 @@ To use ANTseq, first download this repository. ANTseq makes use of Python 2.7, n
 
 Instructions
 --------
-The instructions here is specific to five-way comparison of major continental populations. You may adapt this to your own purpose by changing the ancestral populations.  
+The instructions here is specific to five-way comparison of major continental populations. You may adapt this to your own purpose by changing the ancestral populations. For most cases, we recommend downloading the predesigned primers and skip steps 1-7.   
 
 ### Step 1: 
 
@@ -63,7 +63,7 @@ for pop in {EAS,SAS,EUR}; do
 done 
 ```
 
-For Africans, we remove African American in SW USA and African Caribbeans in Barbados before calculating allele frequency
+For Africans, we remove African American in SW USA and African Caribbeans in Barbados before calculating allele frequency.
 ```
 pop='AFR-ACB-ASW'
 pop_file="$pop.pop"
@@ -71,7 +71,7 @@ cat $panel | grep AFR | grep -v ASW | grep -v ACB | awk '{print $1, $1, $2}' > $
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --freq --make-bed --keep-allele-order --keep $pop_file --out $pop 
 ```
 
-For Native Americans, we infer frequency using ADMIXTURE
+For Native Americans, we infer frequency using ADMIXTURE.
 ```
 # make bed, bim and fam files: 
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --make-bed --keep-allele-order --out ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05 
@@ -83,12 +83,14 @@ admixture ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.
 ADMIXTURE will output 2 files: ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.5.{P,Q}. The P file contains allele frequencies of the 5 populations. Each row of the P file represent a locus, and each column represent a population. The rows are in the same order as the input VCF, but the columns may be shuffled. You can infer the column order by comparing the Q file (ancestry proportions) to the panel file. To use the inferred allele frequencies for step 5, you will need to reformat the P file into a PLINK frq file. 
 
 Caveats: 
+
 1. The SNP column entries in the frq files are not unique. This is because not all SNPs are assigned RS IDs. We recommend that you change the column to {chr}_{pos}. An example is given in update_SNP_id.sh
 2. The frq file contains NA lines. This is because the VCF file from 1000 Genome Project very occasionally has missing genotypes. We recommend that you remove these NA lines. An example is provided in rm_NA.py 
 
+
 ### Step 4:
 
-Calculate global LD R^2. To reduce file size, we only report variants within 2000kbps of each other and with R^2 greater than 0.2:
+Calculate global LD R^2. To reduce file size, we only report variants within 2000 skbps of each other and with R^2 greater than 0.2:
 
 ```
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k
@@ -96,20 +98,19 @@ plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotype
 
 ### Step 5:
 
-Select AIMs markers optimized to distinguish five continental populations. To select AIMs, We provide an configuration file to AIMs_generator.py. An example configuration file is located at AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt. We recommend using the In strategy (strategy=In) with 0% multi-population In markers (propmultiIn=0.0), and apply heterogeneity filter on South Asians (SAS.subpopulations=GIH,PJL,BEB,STU,ITU)
+Select AIMs markers to distinguish five continental populations using AIMs_generator.py. We provide an (example)[AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt] configuration file. We recommend using the In strategy (strategy=In) with 0% multi-population In markers (propmultiIn=0.0), and apply heterogeneity filter on South Asians (SAS.subpopulations=GIH,PJL,BEB,STU,ITU)
 
 
 ```
 python AIMs_generator/AIMs_generator.py AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt
 ```
 
-AIMs_generator will output AFR_AMR_EAS_EUR_SAS_with_heterogeneity_filter.500k_500.aims
+AIMs_generator.py will output AFR_AMR_EAS_EUR_SAS_with_heterogeneity_filter.500k_500.aims.
 
 ### Step 6:
 
 Design primer pools for AIMs selected in step 5. Each pool will contain 10 primer pairs. 
 
-**Warning: the step may take quite some time (1-2 days based on our experience)!**
 
 ```
 python run_yamPCR.py AFR_AMR_EAS_EUR_SAS_with_heterogeneity_filter.500k_500.aims 10 .
@@ -127,7 +128,7 @@ for i in {1..36}; do
 done 
 ```
 
-### Step 7 (optional):
+### Step 7:
 
 We want to know how closely the AIMs estimation matches the true ancestry proportions. The true ancestry proportions are calculated using all 1000 Genomes SNPs. 
 
@@ -150,24 +151,24 @@ The resulting plot looks like:
 
 Next we will purchase multiplex primers. Instead of demonstrating the five-way comparison, we will perform a simpler but similar pairwise comparison of Africans and Europeans. You only likely only need to purchase primers once. The volumn of primers you purchase will be sufficient for many iterations of this pipeline. 
 
-Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filled out an example of 96-well sequence template (_download/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows. Every two rows belong to the same primer pool (e.g. row A and B belongs to primer pool 1; row A is the forward and row B is the reverse primer).  
+Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filled out an example of 96-well sequence [template](_download/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows. Every two rows belong to the same primer pool (e.g. row A and B belongs to primer pool 1; row A is the forward and row B is the reverse primer).  
 
 ![example_primer_plate_annotated](./_images/primer_plate_example_annotated.png)
 
 Below are the parameters we used to order primers: 
 
-Parameter       Value
-------------- ---------------------------
-Size           96-wells
-Volume         360 ul
-Scale          25 nmole
-Purification   Desalted
-Buffer         TE
-Ship Format    Ambient
-Normaliztion   Volumn and Concentration
-Norm. Volume   80 ul
-Norm. Conc.    50 uM
-Pooling        None
+Parameter     |  Value
+------------- |---------------------------
+Size          | 96-wells
+Volume        | 360 ul
+Scale         | 25 nmole
+Purification  | Desalted
+Buffer        | TE
+Ship Format   | Ambient
+Normaliztion  | Volumn and Concentration
+Norm. Volume  | 80 ul
+Norm. Conc.   | 50 uM
+Pooling       | None
 
 
 ### Step 9: 
@@ -177,7 +178,7 @@ Microfluidic multiplex PCR (mmPCR) and sequencing: This step is documented exten
 
 1. Microfluidic multiplex PCR
 
-Follow this [protocol](_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
+Follow Fluidigm's [protocol](_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
 
 2. Sample barcoding
 
