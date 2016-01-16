@@ -142,26 +142,22 @@ Next we want to visualize the correlation between AIMs and genomic ancestry prop
 
 The resulting plot looks like: 
 
-<p align="center">
-  <img src="_images/AFR.EUR.ancestry_r2_vs_num_AIMs.png" style="width: 500px;"/>
-<p/>
+<img src="_images/ancestry_r2_rmse_5way_AIMs_set.SAS_filter.propmultiIn_0.0.real.png" style="width: 500px;"/>
 
-It is clear that AIMs in the first 7 pools is able to achieve greater than 0.999 correlation with the true ancestry proportions. However, since some primer pairs fail during PCR, you may want to double the number and use the first 15 primer pools.
 
-### Step 9:
 
-Purchase multiplex primers 
+### Step 8:
 
-*Note: You only need to perform this step once. The volumn of primers you purchase in this step will be sufficient for many iterations of this pipeline*
+Next we will purchase multiplex primers. Instead of demonstrating the five-way comparison, we will perform a simpler but similar pairwise comparison of Africans and Europeans. You only likely only need to purchase primers once. The volumn of primers you purchase will be sufficient for many iterations of this pipeline. 
 
-Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filed out an example of [96-well sequence template](https://github.com/boshliu/ANTseq/raw/gh-pages/_examples/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows: 
+Order oligo plates using any service you are comfortable with. Here we provide a example for [ThermoFisher/Invitrogen](https://www.thermofisher.com/order/catalog/en/US/adirect/lt?cmd=UploadDNAPlateGroupFile). We have filled out an example of 96-well sequence template (_download/example_multiplex_primer_pool.xls) using the first 4 primer pools of AFR-EUR AIMs. This example produces a single plate of primers shown as follows. Every two rows belong to the same primer pool (e.g. row A and B belongs to primer pool 1; row A is the forward and row B is the reverse primer).  
 
 ![example_primer_plate_annotated](./_images/primer_plate_example_annotated.png)
 
-Below are the parameters we use: 
+Below are the parameters we used to order primers: 
 
 Parameter       Value
------------   ----------
+------------- ---------------------------
 Size           96-wells
 Volume         360 ul
 Scale          25 nmole
@@ -173,97 +169,85 @@ Norm. Volume   80 ul
 Norm. Conc.    50 uM
 Pooling        None
 
-Warning: It generally takes Invitrogen a week or two to ship the oligo plates. Plan accordingly!
 
-
-### Step 10: 
-
-Microfluidic multiplex PCR (mmPCR) and sequencing: 
-
-Don't be intimidated by the name - mmPCR is merely a efficient way of doing your day-to-day PCR. Instead of amplifying a single locus, mmPCR amplifies up to 960 loci of 48 samples at the same time. In our experience, mmPCR saves lots of money. Once you get use to the protocol, it will save you time too! You can read the [paper](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html) if interested. 
-
-Below is the workflow of mmPCR taken from the paper: 
+### Step 9: 
+Microfluidic multiplex PCR (mmPCR) and sequencing: This step is documented extensively in our [paper](http://www.nature.com/nmeth/journal/v11/n1/full/nmeth.2736.html). Below briefly describes the workflow: 
 
 ![mmPCR workflow](_images/mmPCR_workflow.png)
 
-1. microfluidic PCR.
+1. Microfluidic multiplex PCR
 
-Mix all primer pairs for each primer pool, then follow the [protocol](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
+Follow this [protocol](_download/aa-2-primer-qr-c1.pdf) to perform mmPCR.
 
-2. barcoding
+2. Sample barcoding
 
-Barcode each samples to distinguish one from another during the analysis step. <insert link once rui replies> 
+Barcoding allows PCR product to be sequenced in a single batch. The sequencing product will be de-multiplexed using unique barcodes of each sample. We provide a set of [384 unique barcodes](_download/fluidigm_10bp_384_index.rc_barcodeprimer.txt).   
 
 3. Sequencing 
 
-Sequencing procedures can vary depending on the instruments available in your institution/company. You should use **single-end** sequencing and sequence at least **75 bases**. This is because the location of the AIMs marker is designed to be within 75 bases from the start of the forward read. We recommend sequencing to 100X coverage to account for uneven amplification during the PCR procedure. 
+Sequencing procedures can vary depending on the instruments available in your institution/company. We recommend using **single-end** sequencing of at least **75 bases**. This is because the location of the AIMs marker is designed to be within 75 bases from the start of the forward read. We recommend sequencing to 100X coverage to account for uneven amplification during the PCR procedure. 
 
-### Step 11: 
+### Step 10: 
 
-Map the fastq files using your favorite mapper, for example:
+Map and sort sequencing data: 
 
 ```
-bwa mem -M -R '@RG\tID:group1\tSM:sample1\tPL:illumina\tLB:lib1\tPU:unit1' hg19.fa sample1.fq.gz > sample1.sam
-samtools view -uhbS sample1.sam | samtools sort - sample1.sorted
+bwa mem -M -R '@RG\tID:group1\tSM:sample\tPL:illumina\tLB:lib1\tPU:unit1' hg19.fa sample.fq.gz > sample.sam
+samtools view -uhbS sample.sam | samtools sort - sample.sorted
 ```
 
-### Step 12:
+### Step 11:
 
-Call genotype using GATK, for example: 
+Call variants using GATK: 
 
 ```
 java -Xmx4g -jar GenomeAnalysisTK.jar \
   -T HaplotypeCaller \
   -R hg19.fa \
-  --genotyping_mode GENOTYPE_GIVEN_ALLELES \
-  --alleles 1000genomes_phase3v5.vcf \
-  -I sample1.sorted.bam \
-  -L aims_list.txt \
-  -stand_emit_conf 10 \ 
-  -stand_call_conf 30 \ 
-  -o sample1.vcf
+  --genotyping_mode DISCOVERY
+  -I sample.sorted.bam \
+  -L aims_list \
+  –output_mode EMIT_ALL_SITES \
+  -o sample.vcf
 ```
 
-Since we know the marker positions and genotype, we use the -L flag to restrict the positions and set the --genotype_mode to be GENOTYPE_GIVEN_ALLELES, which tell GATK to only report variants included in 1000genomes_phase3v5.vcf.
+The flag -L aims_list restricts the caller to regions to AIMs loci. We provide an [example aims_list](_download/2popaims_wlrld2M_150.aims.snpinfo.bed). 
 
-### Step 13: 
+### Step 12: 
 
-We will use ADMIXTURE to estimate ancestry proportions, but first we need to convert the genotypes from VCF to PLINK's bed format.
+We will use ADMIXTURE to estimate ancestry proportions. First we need to convert the genotypes from VCF to PLINK's bed format.
 
 ```
-plink --vcf sample1.snps.indels.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample1
+plink --vcf sample.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample
 ```
 
-Of course, we also need to extract the genotype of African and European individuals at AIMs sites from 1000 Genomes vcf file
+To increase the accuracy of ancestry estimates, we enhance our dataset with 1000 Genomes African and European individuals. We provide an [example aims_id_list](_download/2popaims_wlrld2M_150.aims.snpinfo) for the second command.
 
 ```
 cat integrated_call_samples_v3.20130502.ALL.panel | grep -e AFR -e EUR | awk '{print $1, $1, $2}' > AFR.EUR.pop
-plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --keep-allele-order --keep AFR.EUR.pop --extract aims_list.snpid --make-bed --out AFR.EUR
-```
 
-Next we merge our samples with 1000 genomes individuals: 
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --keep-allele-order --keep AFR.EUR.pop --extract aims_id_list --make-bed --out AFR.EUR
 
-```
-plink --bfile AFR.EUR --bmerge sample1.bed sample1.bim sample1.fam --make-bed --out sample1_AFR.EUR_merge
+plink --bfile AFR.EUR --bmerge sample.bed sample.bim sample.fam --make-bed --out merged
 ```
 
 Finally, we estimate ancestry proportions using ADMIXTURE:
 
 ```
-admixture sample1_AFR.EUR_merge.bed 2 
+admixture merged.bed 2 
 ```
 
-And that's it! Whew! 
+The Q file from ADMIXTURE contains the ancestry coefficients. 
 
 
 Citation
 --------
-TBD
+Boxiang Liu, Suyash Shringarpure, Christopher Gignoux, Rui Zhang, Kevin S. Smith, Carlos D. Bustamante, Jin Billy Li, Douglas Vollrath, Stephen B. Montgomery (2016) ANTseq: Ancestry Inference through Microfluidic Multiplex PCR and Sequencing 
 
 
 Contact
 -------- 
-Questions? Please contact us!  
+Please contact us if you have any questions.
 Boxiang Liu: bliu2@stanford.edu   
 Stephen Montgomery: smontgom@stanford.edu  
 
