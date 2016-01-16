@@ -87,7 +87,7 @@ ADMIXTURE will output 2 files: ALL.autosome.phase3_shapeit2_mvncall_integrated_v
 
 Calculate global LD $R^2$. To reduce file size, we only report variants within 2000kbps of each other and with $R^2$ greater than 0.2:
 
-```
+```shell
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k
 ```
 
