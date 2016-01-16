@@ -98,7 +98,7 @@ plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotype
 
 ### Step 5:
 
-Select AIMs markers to distinguish five continental populations using AIMs_generator.py. We provide an (example)[AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt] configuration file. We recommend using the In strategy (strategy=In) with 0% multi-population In markers (propmultiIn=0.0), and apply heterogeneity filter on South Asians (SAS.subpopulations=GIH,PJL,BEB,STU,ITU)
+Select AIMs markers to distinguish five continental populations using AIMs_generator.py. We provide an [example](AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt) configuration file. We recommend using the In strategy (strategy=In) with 0% multi-population In markers (propmultiIn=0.0), and apply heterogeneity filter on South Asians (SAS.subpopulations=GIH,PJL,BEB,STU,ITU)
 
 
 ```
@@ -212,7 +212,7 @@ java -Xmx4g -jar GenomeAnalysisTK.jar \
   -o sample.vcf
 ```
 
-The flag -L aims_list restricts the caller to regions to AIMs loci. We provide an [example aims_list](_download/2popaims_wlrld2M_150.aims.snpinfo.bed). 
+The flag -L aims_list restricts the caller to regions to AIMs loci. We provide an [example](_download/2popaims_wlrld2M_150.aims.snpinfo.bed) aims_list. 
 
 ### Step 12: 
 
@@ -222,7 +222,7 @@ We will use ADMIXTURE to estimate ancestry proportions. First we need to convert
 plink --vcf sample.vcf --double-id --snps-only --keep-allele-order --make-bed --out sample
 ```
 
-To increase the accuracy of ancestry estimates, we enhance our dataset with 1000 Genomes African and European individuals. We provide an [example aims_id_list](_download/2popaims_wlrld2M_150.aims.snpinfo) for the second command.
+To increase the accuracy of ancestry estimates, we enhance our dataset with 1000 Genomes African and European individuals. We provide an [example](_download/2popaims_wlrld2M_150.aims.snpinfo) aims_id_list for the second command.
 
 ```
 cat integrated_call_samples_v3.20130502.ALL.panel | grep -e AFR -e EUR | awk '{print $1, $1, $2}' > AFR.EUR.pop
