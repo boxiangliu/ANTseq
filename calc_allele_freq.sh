@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##calculate the allele frequency for 5 super populations in 1000 Genomes catalog.
-##AFR contains two admixed subpopulations (ASW and ACB0 that needs to be removed. 
+##AFR contains two admixed subpopulations (ASW and ACB that needs to be removed. 
 ##In addition, calculate global LD r2 using all individuals in 1000 Genomes catalog. 
 
 wd="/srv/persistent/bliu2/ancestry/AIMS_selection"

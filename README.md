@@ -1,6 +1,6 @@
-<center> <h1>ANTseq</h1> </center>
+# ANTseq
 
-<center> <h3>Ancestry Inference through Microfluidic Multiplex PCR and Sequencing</h3> </center>
+## Ancestry Inference through Microfluidic Multiplex PCR and Sequencing
 
 Introduction 
 -------------
@@ -22,7 +22,7 @@ We provide AIMs sets for
 
 Installation 
 -------------
-To use ANTseq, you need to download the [repository](https://github.com/boxiangliu/ANTseq/). ANTseq makes use of Python 2.7, numpy and scipy. You can either install the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, ANTseq uses [yamPCR](http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html) to design multiplex primer pools. The easiest way to install yamPCR dependencies is to use [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm). In addition, you should install [VCFtools](http://vcftools.sourceforge.net/), [PLINK2](https://www.cog-genomics.org/plink2) and [ADMIXTURE](https://www.genetics.ucla.edu/software/admixture/) and add them to your PATH.
+To use ANTseq, first download this repository. ANTseq makes use of Python 2.7, numpy and scipy. You can either install the [Anaconda](https://store.continuum.io/cshop/anaconda/) distribution of Python (which includes numpy and scipy) or install these two modules manually. In addition, ANTseq uses [yamPCR](http://arep.med.harvard.edu/kzhang/polHap/PrimerDesign.html) to design multiplex primer pools. The easiest way to install yamPCR dependencies is to use [cpanminus](http://search.cpan.org/~miyagawa/App-cpanminus-1.7039/lib/App/cpanminus.pm). In addition, you should install [VCFtools](http://vcftools.sourceforge.net/), [PLINK2](https://www.cog-genomics.org/plink2) and [ADMIXTURE](https://www.genetics.ucla.edu/software/admixture/) and add them to your PATH.
 
 Instructions
 --------
@@ -53,19 +53,39 @@ vcf-concat ALL.chr{1..22}.phase3_shapeit2_mvncall_integrated_v5.20130502.genotyp
 ```
 
 ### Step 3:
-Calculate allele frequencies of five continental populations. 
+Calculate allele frequencies of five continental populations. We obtain allele frequency from 1000 Genomes for East Asian, South Asian and Europeans. 
 
 ```
-for pop in {AFR,EUR}; do
+for pop in {EAS,SAS,EUR}; do
   pop_file="$pop.pop"
   cat integrated_call_samples_v3.20130502.ALL.panel | grep $pop | awk '{print $1, $1, $2}' > $pop_file
   plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --freq --make-bed --keep-allele-order --keep $pop_file --out $pop
 done 
 ```
 
+For Africans, we remove African American in SW USA and African Caribbeans in Barbados before calculating allele frequency
+```
+pop='AFR-ACB-ASW'
+pop_file="$pop.pop"
+cat $panel | grep AFR | grep -v ASW | grep -v ACB | awk '{print $1, $1, $2}' > $pop_file
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --freq --make-bed --keep-allele-order --keep $pop_file --out $pop 
+```
+
+For Native Americans, we infer frequency using ADMIXTURE
+```
+# make bed, bim and fam files: 
+plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --make-bed --keep-allele-order --out ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05 
+
+# infer allele frequencies: 
+admixture ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.bed 5
+```
+
+ADMIXTURE will output 2 files: ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.5.{P,Q}. The P file contains allele frequencies of the 5 populations. Each row of the P file represent a locus, and each column represent a population. The rows are in the same order as the input VCF, but the columns may be shuffled. You can infer the column order by comparing the Q file (ancestry proportions) to the panel file. To use the inferred allele frequencies for step 5, you will need to reformat the P file into a PLINK frq file. 
+
+
 ### Step 4:
 
-Calculate global LD r2. Report r2 only when variants are within 2000kbps of each other and has r2 greater than 0.2:
+Calculate global LD $R^2$. To reduce file size, we only report variants within 2000kbps of each other and with $R^2$ greater than 0.2:
 
 ```
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k
