@@ -82,64 +82,63 @@ admixture ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.
 
 ADMIXTURE will output 2 files: ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.5.{P,Q}. The P file contains allele frequencies of the 5 populations. Each row of the P file represent a locus, and each column represent a population. The rows are in the same order as the input VCF, but the columns may be shuffled. You can infer the column order by comparing the Q file (ancestry proportions) to the panel file. To use the inferred allele frequencies for step 5, you will need to reformat the P file into a PLINK frq file. 
 
+Caveats: 
+1. The SNP column entries in the frq files are not unique. This is because not all SNPs are assigned RS IDs. We recommend that you change the column to {chr}_{pos}. An example is given in update_SNP_id.sh
+2. The frq file contains NA lines. This is because the VCF file from 1000 Genome Project very occasionally has missing genotypes. We recommend that you remove these NA lines. An example is provided in rm_NA.py 
 
 ### Step 4:
 
-Calculate global LD $R^2$. To reduce file size, we only report variants within 2000kbps of each other and with $R^2$ greater than 0.2:
+Calculate global LD R^2. To reduce file size, we only report variants within 2000kbps of each other and with R^2 greater than 0.2:
 
-```shell
+```
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --r2 --ld-window-kb 2000 --ld-window 99999999 --ld-window-r2 0.2 --make-bed --out global_r2_0.2_window_2000k
 ```
 
 ### Step 5:
 
-Select AIMs markers optimized to distinguish Europeans from Africans:
+Select AIMs markers optimized to distinguish five continental populations. To select AIMs, We provide an configuration file to AIMs_generator.py. An example configuration file is located at AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt. We recommend using the In strategy (strategy=In) with 0% multi-population In markers (propmultiIn=0.0), and apply heterogeneity filter on South Asians (SAS.subpopulations=GIH,PJL,BEB,STU,ITU)
 
-First populate aims_properties.txt with pathes to AFR.frq and EUR.frq, an example can be found here: 
-**TODO: make an example aims_properties.txt file**
-
-Next run AIMs_generator.py:
 
 ```
-python AIMs_generator.py aims_properties.txt 
+python AIMs_generator/AIMs_generator.py AIMs_generator/aims_properties_five_superpopulations_with_heterogeneity_filter.txt
 ```
+
+AIMs_generator will output AFR_AMR_EAS_EUR_SAS_with_heterogeneity_filter.500k_500.aims
 
 ### Step 6:
 
-Design primer pools for AIMs in step 5. Each pool will contain 10 primer pairs. 
+Design primer pools for AIMs selected in step 5. Each pool will contain 10 primer pairs. 
 
 **Warning: the step may take quite some time (1-2 days based on our experience)!**
 
 ```
-python run_yamPCR.py AFR_EUR_500k_500.aims 10 <path/to/output/dir>
+python run_yamPCR.py AFR_AMR_EAS_EUR_SAS_with_heterogeneity_filter.500k_500.aims 10 .
 ```
 
-You will end up with files named primerPools_*.txt in your output_directory. 
+Note the "." at the end of the command - it sets our working directory to the current directory. 
+
+run_yamPCR.py will output files named primerPools_*.txt. 
 
 Next we add barcode adapters to each primer: 
 
 ```
-cat primerPools_1.txt | python add_adaptor.py > primerPools_1.adaptor.txt
+for i in {1..36}; do
+  cat primerPool_$i.txt | python $ancestry/scripts/add_adaptor.py > primerPool_$i.adaptor.txt
+done 
 ```
 
-Note: download pre-designed multiplex primer pools [here](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/primerPools)
-
-### Step 7:
+### Step 7 (optional):
 
 We want to know how closely the AIMs estimation matches the true ancestry proportions. The true ancestry proportions are calculated using all 1000 Genomes SNPs. 
 
 ```
 ls -v primerPool_*.txt > primerPoolList.txt
-calc_ancestry_proportions.py -p AFR,EUR -l primerPoolList.txt
+python -u calc_ancestry_proportions.py -p AFR,AMR,EAS,EUR,SAS -l primerPoolList.txt
 ```
 
-### Step 8:
+calc_ancestry_proportions.py will output AFR.AMR.EAS.EUR.SAS.cumPrimerPool_{1..36}.5.{P,Q}
 
-Visualize the correlation between AIMs estimation and true ancestry proportions. Here we assume 35 primer pools are designed: 
-
-```
-Rscript plot_ancestry_r2_vs_num_AIMs.r AFR,EUR 35
-```
+Next we want to visualize the correlation between AIMs and genomic ancestry proportions. An example is provided in plot_r2_and_RMSE.5_way_AIMs_set.R
 
 The resulting plot looks like: 
 
