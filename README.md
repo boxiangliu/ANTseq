@@ -18,7 +18,7 @@ We provide AIMs sets for
   2. Pairwise comparisons of four continental populations (African, European, South Asian, East Asian)
   3. A three-way comparison for Admixed Americans. Native Americans are ad-mixed with Europeans and Africans; the three-way configuration is more applicable in most cases than two separate pairwise comparisons. 
   
-[Download primers](https://github.com/boshliu/ANTseq/raw/gh-pages/_download/primerPools)
+[Download primers](_download/primerPools)
 
 Installation 
 -------------
