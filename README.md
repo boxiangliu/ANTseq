@@ -229,7 +229,7 @@ cat integrated_call_samples_v3.20130502.ALL.panel | grep -e AFR -e EUR | awk '{p
 
 plink --vcf ALL.autosome.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.maf05.vcf.gz --double-id --snps-only --keep-allele-order --keep AFR.EUR.pop --extract aims_id_list --make-bed --out AFR.EUR
 
-plink --bfile AFR.EUR --bmerge sample.bed sample.bim sample.fam --make-bed --out merged
+plink --bfile AFR.EUR --bmerge sample --make-bed --out merged
 ```
 
 Finally, we estimate ancestry proportions using ADMIXTURE:
