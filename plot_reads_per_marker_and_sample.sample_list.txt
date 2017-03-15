@@ -1,0 +1,12 @@
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19703_S74.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19712_S78.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19819_S62.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19900_S58.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19904_S70.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19920_S66.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA19923_S54.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA20127_S82.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA20278_S86.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA20291_S50.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA20299_S90.150aims.zpileup
+../wetlab/Bosh_ASW_mmPCR_2/data/2014-11/zpileup/NA20314_S94.150aims.zpileup

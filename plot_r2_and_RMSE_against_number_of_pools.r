@@ -129,7 +129,7 @@ levels(r2$population_group) = str_replace_all(levels(r2$population_group), '\\.'
 # plot correlation coefficient for pairs in {AFR, EAS, EUR, SAS}
 p = ggplot(r2 %>% filter(population_group != "AFR+AMR+EUR"), aes(x = poolRank, y = r2)) + 
 	geom_line() + geom_point() + 
-	facet_grid(population_group~., scales = 'free') +
+	facet_grid(population_group~.) +
 	xlab("Number of pools") + ylab(expression(R^"2")) + 
 	theme_bw() + 
 	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
@@ -144,8 +144,8 @@ p2 = ggplot(r2 %>% filter(population_group == "AFR+AMR+EUR"), aes(x = poolRank, 
 	xlab("Number of pools") + ylab(expression(R^"2")) + 
 	theme_bw() + 
 	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
-	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank()) + 
-gsave('AIMS_selection/figures/r2.AFR_AMR_EUR.pdf',p2, width = 6, height = 6)
+	theme(panel.grid.minor=element_blank(), panel.grid.major=element_blank(),panel.background=element_blank())
+ggsave('AIMS_selection/figures/r2.AFR_AMR_EUR.pdf',p2, width = 6, height = 6)
 ggsave('AIMS_selection/figures/r2.AFR_AMR_EUR.png',p2, width = 6, height = 6)
 
 
@@ -160,7 +160,7 @@ levels(rmse$population_group) = str_replace_all(levels(rmse$population_group), '
 # plot correlation coefficient for pairs in {AFR, EAS, EUR, SAS}
 p3 = ggplot(rmse %>% filter(population_group != "AFR+AMR+EUR"), aes(x = poolRank, y = rmse)) + 
 	geom_line() + geom_point() + 
-	facet_grid(population_group~., scales = 'free') +
+	facet_grid(population_group~.) +
 	xlab("Number of pools") + ylab("RMSE") + 
 	theme_bw() + 
 	theme(axis.title = element_text(size = 20), axis.text = element_text(size = 20)) +
